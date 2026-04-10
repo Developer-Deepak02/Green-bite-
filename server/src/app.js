@@ -14,6 +14,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/menu", menuRoutes);
 
+// CORS configuration
+app.use(
+	cors({
+		origin: "http://localhost:3000",
+	}),
+);
+
 // Health check
 app.get("/api/health", (req, res) => {
 	res.status(200).json({ message: "API is running" });
