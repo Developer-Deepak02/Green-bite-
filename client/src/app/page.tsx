@@ -1,65 +1,151 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+export default function HomePage() {
+	return (
+		<div className="bg-background dark:bg-gray-900 text-text dark:text-white">
+			{/*HERO SECTION */}
+			<section
+				className="px-4 pt-16 pb-20 text-center 
+      bg-gradient-to-b from-gray-900 to-green-700 text-white"
+			>
+				<h1 className="text-4xl md:text-6xl font-heading font-bold mb-6 leading-tight">
+					🍃 Fresh Food <br /> Delivered Fast
+				</h1>
+
+				<p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg">
+					Healthy, tasty meals made with fresh ingredients and delivered to your
+					door in minutes.
+				</p>
+
+				<Link
+					href="/menu"
+					className="inline-block bg-primary hover:bg-primary-dark 
+          text-white px-8 py-4 rounded-xl text-lg font-semibold 
+          shadow-lg hover:scale-105 transition"
+				>
+					Order Now 🚀
+				</Link>
+
+				{/* FOOD IMAGE */}
+				<div className="mt-12 flex justify-center">
+					<img
+						src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+						className="w-full h-40 object-cover"
+					/>
+				</div>
+			</section>
+
+			{/* CATEGORIES */}
+			<section className="px-4 py-16 max-w-6xl mx-auto">
+				<h2 className="text-3xl font-heading font-semibold text-center mb-10">
+					Explore Categories
+				</h2>
+
+				<div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+					{[
+						{ name: "Pizza", img: "pizza" },
+						{ name: "Burger", img: "burger" },
+						{ name: "Drinks", img: "juice" },
+						{ name: "Desserts", img: "dessert" },
+					].map((cat) => (
+						<div
+							key={cat.name}
+							className="group cursor-pointer rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition"
+						>
+							<img
+								src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+								className="w-full h-40 object-cover"
+							/>
+							<div className="p-3 bg-white dark:bg-gray-800 text-center">
+								<p className="font-medium">{cat.name}</p>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* POPULAR DISHES */}
+			<section className="px-4 py-16 bg-white dark:bg-gray-800">
+				<h2 className="text-3xl font-heading font-semibold text-center mb-10">
+					Popular Dishes
+				</h2>
+
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-5xl mx-auto">
+					{[1, 2, 3, 4].map((item) => (
+						<div
+							key={item}
+							className="rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition"
+						>
+							<img
+								src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+								
+								className="w-full h-40 object-cover"
+							/>
+
+							<div className="p-4 bg-white dark:bg-gray-800">
+								<h3 className="font-heading text-lg">Veg Pizza</h3>
+								<p className="text-sm text-gray-500 dark:text-gray-400">
+									Loaded with cheese and fresh veggies
+								</p>
+
+								<div className="mt-3 flex justify-between items-center">
+									<span className="text-primary font-semibold text-lg">
+										₹199
+									</span>
+
+									<button className="bg-primary hover:bg-primary-dark text-white px-3 py-1 rounded-lg text-sm transition">
+										Add
+									</button>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* WHY CHOOSE US */}
+			<section className="px-4 py-16 max-w-6xl mx-auto">
+				<h2 className="text-3xl font-heading font-semibold text-center mb-10">
+					Why GreenBite?
+				</h2>
+
+				<div className="grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+					<div className="p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm">
+						<h3 className="text-xl mb-2">🚀 Fast Delivery</h3>
+						<p className="text-sm text-gray-500 dark:text-gray-400">
+							Get your food in under 30 minutes.
+						</p>
+					</div>
+
+					<div className="p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm">
+						<h3 className="text-xl mb-2">🥗 Fresh Ingredients</h3>
+						<p className="text-sm text-gray-500 dark:text-gray-400">
+							Only high-quality fresh ingredients used.
+						</p>
+					</div>
+
+					<div className="p-6 rounded-2xl bg-white dark:bg-gray-800 shadow-sm">
+						<h3 className="text-xl mb-2">💚 Healthy Choices</h3>
+						<p className="text-sm text-gray-500 dark:text-gray-400">
+							Balanced meals for better living.
+						</p>
+					</div>
+				</div>
+			</section>
+
+			{/* 🚀 FINAL CTA */}
+			<section className="px-4 py-20 text-center bg-primary text-white">
+				<h2 className="text-3xl font-heading mb-4">
+					Ready to order your favorite meal?
+				</h2>
+
+				<Link
+					href="/menu"
+					className="inline-block bg-white text-primary px-6 py-3 rounded-xl font-semibold hover:scale-105 transition"
+				>
+					Browse Menu
+				</Link>
+			</section>
+		</div>
+	);
 }
