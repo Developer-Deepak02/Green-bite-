@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { MenuItem, Category } from "@/types";
+import { useCartStore } from "@/store/useCartStore";
+import Link from "next/link";
 
 export default function MenuPage() {
 	const [menu, setMenu] = useState<MenuItem[]>([]);
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [search, setSearch] = useState("");
 	const [selectedCategory, setSelectedCategory] = useState("");
+	const addToCart = useCartStore((state) => state.addToCart);
 
 	useEffect(() => {
 		api.getCategories().then(setCategories);
@@ -21,12 +24,15 @@ export default function MenuPage() {
 		api.getMenu(query).then(setMenu);
 	}, [search, selectedCategory]);
 
+	const items = useCartStore((state) => state.items);
+	console.log(items);
 	return (
 		<div className="min-h-screen px-4 py-6 bg-background dark:bg-gray-900">
 			{/* Header */}
 			<h1 className="text-3xl font-heading mb-6 text-text dark:text-white">
 				🍽 Menu
 			</h1>
+			<Link href="/cart">Go to Cart</Link>
 
 			{/* Search */}
 			<input
@@ -92,8 +98,16 @@ export default function MenuPage() {
 							</span>
 
 							<button
+								onClick={() =>
+									addToCart({
+										_id: item._id,
+										name: item.name,
+										price: item.price,
+										quantity: 1,
+									})
+								}
 								className="bg-primary hover:bg-primary-dark 
-                text-white px-3 py-1 rounded-lg text-sm transition"
+  text-white px-3 py-1 rounded-lg text-sm transition"
 							>
 								Add
 							</button>
