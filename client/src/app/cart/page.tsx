@@ -3,18 +3,54 @@
 import { useCartStore } from "@/store/useCartStore";
 
 export default function CartPage() {
+	const clearCart = useCartStore((state) => state.clearCart);
 	const { items, increaseQty, decreaseQty, removeFromCart } = useCartStore();
 
 	const total = items.reduce(
 		(acc, item) => acc + item.price * item.quantity,
 		0,
 	);
+	// PLACE ORDER
+	const handlePlaceOrder = async () => {
+		try {
+			const token = localStorage.getItem("token");
+
+			const res = await fetch("http://localhost:5000/api/orders", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({
+					items: items.map((item) => ({
+						name: item.name,
+						price: item.price,
+						quantity: item.quantity,
+					})),
+					totalAmount: total,
+				}),
+			});
+
+			const data = await res.json();
+
+			if (!res.ok) {
+				alert(data.message);
+				return;
+			}
+
+			// SUCCESS
+			alert("Order placed successfully 🎉");
+
+			clearCart();
+		} catch (error) {
+			console.error(error);
+			alert("Something went wrong");
+		}
+	};
 
 	return (
 		<div className="min-h-screen p-4 bg-background dark:bg-gray-900">
-			<h1 className="text-2xl font-heading mb-6 dark:text-white">
-				Your Cart
-			</h1>
+			<h1 className="text-2xl font-heading mb-6 dark:text-white">Your Cart</h1>
 
 			{items.length === 0 ? (
 				<p className="text-gray-500">Cart is empty</p>
@@ -61,6 +97,13 @@ export default function CartPage() {
 					<div className="mt-6 text-lg font-semibold dark:text-white">
 						Total: ₹{total}
 					</div>
+					<button
+						onClick={handlePlaceOrder}
+						className="mt-4 w-full bg-primary hover:bg-primary-dark 
+  text-white py-3 rounded-xl font-semibold transition"
+					>
+						Place Order
+					</button>
 				</div>
 			)}
 		</div>
