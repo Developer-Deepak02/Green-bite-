@@ -1,14 +1,47 @@
 const Order = require("../models/Order");
+const Address = require("../models/Address");
 
-// Create Order
 exports.createOrder = async (req, res) => {
 	try {
-		const { items, totalAmount } = req.body;
+		const { items, totalAmount, address: addressId } = req.body;
 
+		// Basic validation
+		if (!items || items.length === 0) {
+			return res.status(400).json({ message: "Cart is empty" });
+		}
+
+		if (!addressId) {
+			return res.status(400).json({ message: "Address is required" });
+		}
+		
+		// Fetch address
+		const addressDoc = await Address.findOne({
+			_id: addressId,
+			user: req.user.id,
+		});
+
+		if (!addressDoc) {
+			return res.status(404).json({
+				message: "Address not found",
+			});
+		}
+
+		//  Convert to snapshot (store all details at time of order)
+		const addressSnapshot = {
+			fullName: addressDoc.fullName,
+			phone: addressDoc.phone,
+			street: addressDoc.street,
+			city: addressDoc.city,
+			state: addressDoc.state,
+			pincode: addressDoc.pincode,
+		};
+
+		// Create order
 		const order = await Order.create({
 			user: req.user.id,
 			items,
 			totalAmount,
+			address: addressSnapshot,
 			estimatedDeliveryTime: 30,
 		});
 

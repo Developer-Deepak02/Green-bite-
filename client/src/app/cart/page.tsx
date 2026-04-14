@@ -1,19 +1,48 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
+import { useEffect, useState } from "react";
 
 export default function CartPage() {
-	const clearCart = useCartStore((state) => state.clearCart);
-	const { items, increaseQty, decreaseQty, removeFromCart } = useCartStore();
+	const { items, increaseQty, decreaseQty, removeFromCart, clearCart } =
+		useCartStore();
+
+	const [addresses, setAddresses] = useState<any[]>([]);
+	const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
 
 	const total = items.reduce(
 		(acc, item) => acc + item.price * item.quantity,
 		0,
 	);
+
+	// Fetch addresses
+	useEffect(() => {
+		const fetchAddresses = async () => {
+			const token = localStorage.getItem("token");
+
+			const res = await fetch("http://localhost:5000/api/addresses", {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			const data = await res.json();
+			setAddresses(data);
+		};
+
+		fetchAddresses();
+	}, []);
+
 	// PLACE ORDER
 	const handlePlaceOrder = async () => {
 		try {
 			const token = localStorage.getItem("token");
+
+			// Require address selection
+			if (!selectedAddress) {
+				alert("Please select an address");
+				return;
+			}
 
 			const res = await fetch("http://localhost:5000/api/orders", {
 				method: "POST",
@@ -28,6 +57,7 @@ export default function CartPage() {
 						quantity: item.quantity,
 					})),
 					totalAmount: total,
+					address: selectedAddress, // Send ID (backend converts to snapshot)
 				}),
 			});
 
@@ -38,10 +68,10 @@ export default function CartPage() {
 				return;
 			}
 
-			// SUCCESS
 			alert("Order placed successfully 🎉");
 
 			clearCart();
+			setSelectedAddress(null);
 		} catch (error) {
 			console.error(error);
 			alert("Something went wrong");
@@ -56,6 +86,7 @@ export default function CartPage() {
 				<p className="text-gray-500">Cart is empty</p>
 			) : (
 				<div className="space-y-4">
+					{/* CART ITEMS */}
 					{items.map((item) => (
 						<div
 							key={item._id}
@@ -93,14 +124,52 @@ export default function CartPage() {
 						</div>
 					))}
 
+					{/* ADDRESS SECTION */}
+					<div className="mt-6">
+						<h2 className="text-lg font-semibold mb-2 dark:text-white">
+							Select Address
+						</h2>
+
+						{addresses.length === 0 ? (
+							<p className="text-gray-500">No address found. Please add one.</p>
+						) : (
+							<div className="space-y-3">
+								{addresses.map((addr) => (
+									<div
+										key={addr._id}
+										onClick={() => setSelectedAddress(addr._id)}
+										className={`p-3 rounded-xl cursor-pointer border transition
+                    ${
+											selectedAddress === addr._id
+												? "border-primary bg-green-100 dark:bg-green-900"
+												: "border-gray-300 dark:border-gray-600"
+										}`}
+									>
+										<p className="font-medium dark:text-white">
+											{addr.fullName}
+										</p>
+										<p className="text-sm text-gray-500">
+											{addr.street}, {addr.city}
+										</p>
+										<p className="text-sm text-gray-500">
+											{addr.state} - {addr.pincode}
+										</p>
+									</div>
+								))}
+							</div>
+						)}
+					</div>
+
 					{/* TOTAL */}
 					<div className="mt-6 text-lg font-semibold dark:text-white">
 						Total: ₹{total}
 					</div>
+
+					{/* PLACE ORDER */}
 					<button
 						onClick={handlePlaceOrder}
 						className="mt-4 w-full bg-primary hover:bg-primary-dark 
-  text-white py-3 rounded-xl font-semibold transition"
+            text-white py-3 rounded-xl font-semibold transition"
 					>
 						Place Order
 					</button>
