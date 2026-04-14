@@ -48,7 +48,10 @@ const orderSchema = new mongoose.Schema(
 			default: "pending",
 		},
 
-		estimatedDeliveryTime: Date,
+		estimatedDeliveryTime: {
+			type: Number, // minutes
+			default: 30,
+		},
 	},
 	{ timestamps: true },
 );
