@@ -1,6 +1,7 @@
 const Order = require("../models/Order");
 const Address = require("../models/Address");
 
+//  Create Order
 exports.createOrder = async (req, res) => {
 	try {
 		const { items, totalAmount, address: addressId } = req.body;
@@ -13,7 +14,7 @@ exports.createOrder = async (req, res) => {
 		if (!addressId) {
 			return res.status(400).json({ message: "Address is required" });
 		}
-		
+
 		// Fetch address
 		const addressDoc = await Address.findOne({
 			_id: addressId,
@@ -26,7 +27,7 @@ exports.createOrder = async (req, res) => {
 			});
 		}
 
-		//  Convert to snapshot (store all details at time of order)
+		// Convert to snapshot
 		const addressSnapshot = {
 			fullName: addressDoc.fullName,
 			phone: addressDoc.phone,
@@ -46,6 +47,19 @@ exports.createOrder = async (req, res) => {
 		});
 
 		res.status(201).json(order);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
+
+// Get logged-in user's orders
+exports.getUserOrders = async (req, res) => {
+	try {
+		const orders = await Order.find({ user: req.user.id }).sort({
+			createdAt: -1,
+		});
+
+		res.json(orders);
 	} catch (error) {
 		res.status(500).json({ message: error.message });
 	}
