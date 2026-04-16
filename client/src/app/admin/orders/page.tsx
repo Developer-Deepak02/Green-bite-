@@ -2,6 +2,25 @@
 
 import { useEffect, useState } from "react";
 
+const STATUS_STYLES: Record<string, string> = {
+	pending: "bg-yellow-500",
+	confirmed: "bg-blue-500",
+	preparing: "bg-purple-500",
+	out_for_delivery: "bg-orange-500",
+	delivered: "bg-green-600",
+	cancelled: "bg-red-600",
+};
+
+// Controlled flow
+const STATUS_FLOW: Record<string, string[]> = {
+	pending: ["confirmed", "cancelled"],
+	confirmed: ["preparing", "cancelled"],
+	preparing: ["out_for_delivery"],
+	out_for_delivery: ["delivered"],
+	delivered: [],
+	cancelled: [],
+};
+
 interface Order {
 	_id: string;
 	items: {
@@ -17,20 +36,12 @@ interface Order {
 	createdAt: string;
 }
 
-const STATUS_OPTIONS = [
-	"pending",
-	"confirmed",
-	"preparing",
-	"out_for_delivery",
-	"delivered",
-	"cancelled",
-];
-
 export default function AdminOrdersPage() {
 	const [orders, setOrders] = useState<Order[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [filter, setFilter] = useState("all");
 
-	// 📥 Fetch all orders
+	// Fetch all orders
 	const fetchOrders = async () => {
 		try {
 			const token = localStorage.getItem("token");
@@ -43,11 +54,7 @@ export default function AdminOrdersPage() {
 
 			const data = await res.json();
 
-			if (Array.isArray(data.orders)) {
-				setOrders(data.orders);
-			} else {
-				setOrders([]);
-			}
+			setOrders(Array.isArray(data.orders) ? data.orders : []);
 		} catch (error) {
 			console.error(error);
 		} finally {
@@ -57,28 +64,48 @@ export default function AdminOrdersPage() {
 
 	useEffect(() => {
 		fetchOrders();
+
+		// Auto refresh every 5 sec
+		const interval = setInterval(fetchOrders, 5000);
+		return () => clearInterval(interval);
 	}, []);
 
-	// 🔄 Update status
+	// Update status 
 	const updateStatus = async (orderId: string, status: string) => {
 		try {
 			const token = localStorage.getItem("token");
 
-			await fetch(`http://localhost:5000/api/orders/admin/${orderId}/status`, {
-				method: "PUT",
-				headers: {
-					"Content-Type": "application/json",
-					Authorization: `Bearer ${token}`,
+			const res = await fetch(
+				`http://localhost:5000/api/orders/admin/${orderId}/status`,
+				{
+					method: "PUT",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${token}`,
+					},
+					body: JSON.stringify({ status }),
 				},
-				body: JSON.stringify({ status }),
-			});
+			);
 
-			// refresh orders
-			fetchOrders();
+			const data = await res.json();
+
+			if (!res.ok) {
+				alert(data.message);
+				return;
+			}
+
+			// Instant UI update 
+			setOrders((prev) =>
+				prev.map((o) => (o._id === orderId ? { ...o, status } : o)),
+			);
 		} catch (error) {
 			console.error(error);
 		}
 	};
+
+	// Filter logic
+	const filteredOrders =
+		filter === "all" ? orders : orders.filter((o) => o.status === filter);
 
 	if (loading) return <p className="p-4">Loading...</p>;
 
@@ -88,26 +115,38 @@ export default function AdminOrdersPage() {
 				🛠 Admin Orders
 			</h1>
 
-			{orders.length === 0 ? (
+			{/* Filter */}
+			<select
+				value={filter}
+				onChange={(e) => setFilter(e.target.value)}
+				className="mb-4 p-2 rounded bg-gray-200 dark:bg-gray-700"
+			>
+				<option value="all">All Orders</option>
+				<option value="pending">Pending</option>
+				<option value="delivered">Delivered</option>
+				<option value="cancelled">Cancelled</option>
+			</select>
+
+			{filteredOrders.length === 0 ? (
 				<p>No orders found</p>
 			) : (
 				<div className="space-y-4">
-					{orders.map((order) => (
+					{filteredOrders.map((order) => (
 						<div
 							key={order._id}
 							className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow"
 						>
-							{/* 👤 User */}
+							{/* User */}
 							<div className="text-sm text-gray-500">
-								{order.user?.name} ({order.user?.email})
+								{order.user?.name || "Guest"} ({order.user?.email || "N/A"})
 							</div>
 
-							{/* 🕒 Time */}
+							{/* Time */}
 							<div className="text-xs text-gray-400">
 								{new Date(order.createdAt).toLocaleString()}
 							</div>
 
-							{/* 🍕 Items */}
+							{/* Items */}
 							<div className="mt-2">
 								{order.items.map((item, idx) => (
 									<div key={idx}>
@@ -116,29 +155,37 @@ export default function AdminOrdersPage() {
 								))}
 							</div>
 
-							{/* 💰 Total */}
+							{/* Total */}
 							<div className="mt-2 font-semibold">₹{order.totalAmount}</div>
 
-							{/* 🔴 Current Status */}
+							{/* Status Badge */}
 							<div className="mt-2 text-sm">
 								Status:{" "}
-								<span className="font-semibold text-primary">
-									{order.status}
+								<span
+									className={`px-3 py-1 text-xs rounded-full text-white ${
+										STATUS_STYLES[order.status] || "bg-gray-500"
+									}`}
+								>
+									{order.status.replaceAll("_", " ")}
 								</span>
 							</div>
 
-							{/* 🔄 Buttons */}
-							<div className="flex flex-wrap gap-2 mt-3">
-								{STATUS_OPTIONS.map((status) => (
-									<button
-										key={status}
-										onClick={() => updateStatus(order._id, status)}
-										className="px-2 py-1 text-xs bg-gray-200 dark:bg-gray-700 rounded"
-									>
-										{status}
-									</button>
+							{/* Status Dropdown */}
+							<select
+								value={order.status}
+								onChange={(e) => updateStatus(order._id, e.target.value)}
+								className="mt-3 px-2 py-1 rounded bg-gray-200 dark:bg-gray-700"
+							>
+								<option value={order.status}>
+									{order.status.replaceAll("_", " ")}
+								</option>
+
+								{STATUS_FLOW[order.status]?.map((next) => (
+									<option key={next} value={next}>
+										{next.replaceAll("_", " ")}
+									</option>
 								))}
-							</div>
+							</select>
 						</div>
 					))}
 				</div>
