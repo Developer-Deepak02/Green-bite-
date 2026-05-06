@@ -111,23 +111,69 @@ export default function MenuPage() {
 					{menu.map((item) => (
 						<div
 							key={item._id}
-							className="bg-white dark:bg-gray-800 
-              rounded-2xl p-4 shadow-sm hover:shadow-md transition"
+							className="group overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300"
 						>
-							<h2 className="text-lg font-heading mb-1 dark:text-white">
-								{item.name}
-							</h2>
+							{/* 🍔 Food Image */}
+							<div className="relative h-40 overflow-hidden">
+								<img
+									src={
+										item.image && item.image.trim() !== ""
+											? item.image
+											: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200&auto=format&fit=crop"
+									}
+									alt={item.name}
+									onError={(e) => {
+										e.currentTarget.src =
+											"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200&auto=format&fit=crop";
+									}}
+									className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+								/>
 
-							<p className="text-sm text-gray-500 dark:text-gray-400">
-								{item.description}
-							</p>
+								{/* ⭐ Rating */}
+								<div
+									className="absolute top-3 left-3 
+				bg-white/90 dark:bg-black/70 backdrop-blur-sm
+				px-3 py-1 rounded-full text-sm font-semibold"
+								>
+									⭐ {item.ratingAverage?.toFixed(1) || "0.0"}
+								</div>
 
-							<div className="mt-3 flex justify-between items-center">
-								<span className="text-primary font-semibold text-lg">
-									₹{item.price}
-								</span>
+								{/* 🟢 Availability */}
+								<div
+									className={`absolute top-3 right-3 
+				px-3 py-1 rounded-full text-xs font-semibold text-white
+				${item.isAvailable ? "bg-green-600" : "bg-red-500"}`}
+								>
+									{item.isAvailable ? "Available" : "Unavailable"}
+								</div>
+							</div>
 
+							{/* 📦 Content */}
+							<div className="p-3">
+								<div className="flex justify-between items-start gap-3">
+									<div>
+										<h2 className="text-base font-heading text-gray-900 dark:text-white">
+											{item.name}
+										</h2>
+
+										<p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+											{item.description}
+										</p>
+									</div>
+
+									<div className="text-primary font-bold text-base whitespace-nowrap">
+										₹{item.price}
+									</div>
+								</div>
+
+								{/* ⏱ Prep Time */}
+								<div className="mt-2 text-sm text-gray-500">
+									⏱ {item.preparationTime || 15} mins
+								</div>
+
+								{/* ➕ Add Button */}
 								<button
+									disabled={!item.isAvailable}
 									onClick={() =>
 										addToCart({
 											_id: item._id,
@@ -136,10 +182,14 @@ export default function MenuPage() {
 											quantity: 1,
 										})
 									}
-									className="bg-primary hover:bg-primary-dark 
-                  text-white px-3 py-1 rounded-lg text-sm transition"
+									className={`mt-3 w-full py-1.5 rounded-lg text-sm font-medium transition
+				${
+					item.isAvailable
+						? "bg-primary hover:bg-primary-dark text-white"
+						: "bg-gray-300 cursor-not-allowed text-gray-500"
+				}`}
 								>
-									Add
+									{item.isAvailable ? "Add to Cart" : "Unavailable"}
 								</button>
 							</div>
 						</div>

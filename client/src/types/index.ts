@@ -13,4 +13,8 @@ export interface MenuItem {
 		_id: string;
 		name: string;
 	};
+	isAvailable?: boolean;
+	preparationTime?: number;
+	ratingAverage?: number;
+	ratingCount?: number;
 }
