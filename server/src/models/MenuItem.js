@@ -5,6 +5,7 @@ const menuItemSchema = new mongoose.Schema(
 		name: {
 			type: String,
 			required: true,
+			trim: true,
 		},
 
 		description: String,
@@ -12,6 +13,7 @@ const menuItemSchema = new mongoose.Schema(
 		price: {
 			type: Number,
 			required: true,
+			min: 0,
 		},
 
 		image: String,

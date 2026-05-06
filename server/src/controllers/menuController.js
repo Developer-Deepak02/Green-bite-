@@ -1,10 +1,18 @@
 const MenuItem = require("../models/MenuItem");
 
+// ================= CREATE =================
 // CREATE MENU ITEM (Admin)
 exports.createMenuItem = async (req, res) => {
 	try {
 		const { name, description, price, category, image, preparationTime } =
 			req.body;
+
+		// Basic validation
+		if (!name || !price || !category) {
+			return res.status(400).json({
+				message: "Name, price and category are required",
+			});
+		}
 
 		const item = await MenuItem.create({
 			name,
@@ -21,7 +29,8 @@ exports.createMenuItem = async (req, res) => {
 	}
 };
 
-// GET ALL MENU ITEMS (Public with filters)
+// ================= READ =================
+// GET ALL MENU ITEMS (Public)
 exports.getMenuItems = async (req, res) => {
 	try {
 		const { category, search } = req.query;
@@ -33,9 +42,10 @@ exports.getMenuItems = async (req, res) => {
 			query.category = category;
 		}
 
-		// Search by name
+		// Search by name (safe regex)
 		if (search) {
-			query.name = { $regex: search, $options: "i" };
+			const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+			query.name = { $regex: escaped, $options: "i" };
 		}
 
 		const items = await MenuItem.find(query)
@@ -66,10 +76,28 @@ exports.getMenuItemById = async (req, res) => {
 	}
 };
 
+// ================= UPDATE =================
 // UPDATE MENU ITEM (Admin)
 exports.updateMenuItem = async (req, res) => {
 	try {
-		const item = await MenuItem.findByIdAndUpdate(req.params.id, req.body, {
+		const allowedFields = [
+			"name",
+			"description",
+			"price",
+			"category",
+			"image",
+			"preparationTime",
+		];
+
+		const updateData = {};
+
+		allowedFields.forEach((field) => {
+			if (req.body[field] !== undefined) {
+				updateData[field] = req.body[field];
+			}
+		});
+
+		const item = await MenuItem.findByIdAndUpdate(req.params.id, updateData, {
 			new: true,
 		});
 
@@ -83,6 +111,23 @@ exports.updateMenuItem = async (req, res) => {
 	}
 };
 
+// ================= DELETE =================
+// DELETE MENU ITEM (Admin)
+exports.deleteMenuItem = async (req, res) => {
+	try {
+		const item = await MenuItem.findByIdAndDelete(req.params.id);
+
+		if (!item) {
+			return res.status(404).json({ message: "Item not found" });
+		}
+
+		res.json({ message: "Item deleted successfully" });
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};
+
+// ================= TOGGLE =================
 // TOGGLE AVAILABILITY (Admin)
 exports.toggleAvailability = async (req, res) => {
 	try {
