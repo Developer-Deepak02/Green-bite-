@@ -113,7 +113,7 @@ export default function MenuPage() {
 							key={item._id}
 							className="group overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300"
 						>
-							{/* 🍔 Food Image */}
+							{/* Food Image */}
 							<div className="relative h-40 overflow-hidden">
 								<img
 									src={
@@ -129,7 +129,7 @@ export default function MenuPage() {
 									className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
 								/>
 
-								{/* ⭐ Rating */}
+								{/* Rating */}
 								<div
 									className="absolute top-3 left-3 
 				bg-white/90 dark:bg-black/70 backdrop-blur-sm
@@ -138,7 +138,7 @@ export default function MenuPage() {
 									⭐ {item.ratingAverage?.toFixed(1) || "0.0"}
 								</div>
 
-								{/* 🟢 Availability */}
+								{/* Availability */}
 								<div
 									className={`absolute top-3 right-3 
 				px-3 py-1 rounded-full text-xs font-semibold text-white
@@ -148,7 +148,7 @@ export default function MenuPage() {
 								</div>
 							</div>
 
-							{/* 📦 Content */}
+							{/* Content */}
 							<div className="p-3">
 								<div className="flex justify-between items-start gap-3">
 									<div>
@@ -166,12 +166,12 @@ export default function MenuPage() {
 									</div>
 								</div>
 
-								{/* ⏱ Prep Time */}
+								{/* Prep Time */}
 								<div className="mt-2 text-sm text-gray-500">
 									⏱ {item.preparationTime || 15} mins
 								</div>
 
-								{/* ➕ Add Button */}
+								{/* Add Button */}
 								<button
 									disabled={!item.isAvailable}
 									onClick={() =>

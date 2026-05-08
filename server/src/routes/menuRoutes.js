@@ -5,6 +5,7 @@ const {
 	createMenuItem,
 	getMenuItems,
 	getMenuItemById,
+	getAllMenuItemsAdmin,
 	updateMenuItem,
 	deleteMenuItem,
 	toggleAvailability,
@@ -20,6 +21,7 @@ router.post("/", protect, adminOnly, createMenuItem);
 router.put("/:id", protect, adminOnly, updateMenuItem);
 router.delete("/:id", protect, adminOnly, deleteMenuItem);
 router.patch("/:id/toggle", protect, adminOnly, toggleAvailability);
+router.get("/admin", protect, adminOnly, getAllMenuItemsAdmin);
 
 // ================= PUBLIC (AFTER ADMIN) =================
 router.get("/:id", getMenuItemById);

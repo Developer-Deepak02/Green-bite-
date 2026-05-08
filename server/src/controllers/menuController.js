@@ -148,3 +148,16 @@ exports.toggleAvailability = async (req, res) => {
 		res.status(500).json({ message: error.message });
 	}
 };
+
+// GET ALL MENU ITEMS FOR ADMIN
+exports.getAllMenuItemsAdmin = async (req, res) => {
+	try {
+		const items = await MenuItem.find()
+			.populate("category", "name")
+			.sort({ createdAt: -1 });
+
+		res.json(items);
+	} catch (error) {
+		res.status(500).json({ message: error.message });
+	}
+};

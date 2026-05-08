@@ -4,7 +4,11 @@ const Category = require("../models/Category");
 exports.createCategory = async (req, res) => {
 	try {
 		const { name } = req.body;
-
+		if (!name || !name.trim()) {
+			return res.status(400).json({
+				message: "Category name is required",
+			});
+		}
 		const existing = await Category.findOne({ name });
 		if (existing) {
 			return res.status(400).json({ message: "Category already exists" });
@@ -34,16 +38,25 @@ exports.getCategories = async (req, res) => {
 exports.updateCategory = async (req, res) => {
 	try {
 		const { id } = req.params;
-		const { name, isActive } = req.body;
 
-		const category = await Category.findByIdAndUpdate(
-			id,
-			{ name, isActive },
-			{ new: true },
-		);
+		const updateData = {};
+
+		if (req.body.name !== undefined) {
+			updateData.name = req.body.name;
+		}
+
+		if (req.body.isActive !== undefined) {
+			updateData.isActive = req.body.isActive;
+		}
+
+		const category = await Category.findByIdAndUpdate(id, updateData, {
+			new: true,
+		});
 
 		if (!category) {
-			return res.status(404).json({ message: "Category not found" });
+			return res.status(404).json({
+				message: "Category not found",
+			});
 		}
 
 		res.json(category);
