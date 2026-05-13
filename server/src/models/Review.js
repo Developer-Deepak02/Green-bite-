@@ -5,22 +5,32 @@ const reviewSchema = new mongoose.Schema(
 		user: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "User",
+			required: true,
 		},
 
 		menuItem: {
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "MenuItem",
+			required: true,
 		},
 
 		rating: {
 			type: Number,
+			required: true,
 			min: 1,
 			max: 5,
 		},
 
-		comment: String,
+		comment: {
+			type: String,
+			trim: true,
+			maxlength: 500,
+		},
 	},
 	{ timestamps: true },
 );
+
+// One user can review one item only
+reviewSchema.index({ user: 1, menuItem: 1 }, { unique: true });
 
 module.exports = mongoose.model("Review", reviewSchema);
