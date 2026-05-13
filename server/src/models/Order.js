@@ -73,6 +73,23 @@ const orderSchema = new mongoose.Schema(
 			required: true,
 		},
 
+		subtotalAmount: {
+			type: Number,
+			required: true,
+			min: 0,
+		},
+
+		discountAmount: {
+			type: Number,
+			default: 0,
+			min: 0,
+		},
+
+		coupon: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Coupon",
+		},
+
 		totalAmount: {
 			type: Number,
 			required: true,
@@ -95,6 +112,34 @@ const orderSchema = new mongoose.Schema(
 				"cancelled",
 			],
 			default: "pending",
+		},
+
+		isPaid: {
+			type: Boolean,
+			default: false,
+		},
+
+		paidAt: Date,
+
+		paymentStatus: {
+			type: String,
+			enum: ["pending", "paid", "failed"],
+			default: "pending",
+		},
+
+		paymentMethod: {
+			type: String,
+			default: "razorpay",
+		},
+
+		razorpayOrderId: {
+			type: String,
+			default: null,
+		},
+
+		razorpayPaymentId: {
+			type: String,
+			default: null,
 		},
 
 		estimatedDeliveryTime: {

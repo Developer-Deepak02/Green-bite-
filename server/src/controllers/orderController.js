@@ -1,19 +1,28 @@
 const Order = require("../models/Order");
 const Address = require("../models/Address");
+const MenuItem = require("../models/MenuItem");
+const Coupon = require("../models/Coupon");
 
-//  Create Order
+// ================= CREATE ORDER =================
 exports.createOrder = async (req, res) => {
 	try {
-		const { items, totalAmount, address: addressId } = req.body;
+		const { items, address: addressId, couponCode } = req.body;
 
+		// Validate cart
 		if (!items || items.length === 0) {
-			return res.status(400).json({ message: "Cart is empty" });
+			return res.status(400).json({
+				message: "Cart is empty",
+			});
 		}
 
+		// Validate address
 		if (!addressId) {
-			return res.status(400).json({ message: "Address is required" });
+			return res.status(400).json({
+				message: "Address is required",
+			});
 		}
-		// fetch address
+
+		// Get address
 		const addressDoc = await Address.findOne({
 			_id: addressId,
 			user: req.user.id,
@@ -25,6 +34,115 @@ exports.createOrder = async (req, res) => {
 			});
 		}
 
+		// ================= BUILD SECURE ORDER ITEMS =================
+
+		let secureItems = [];
+		let subtotalAmount = 0;
+		let estimatedDeliveryTime = 0;
+
+		for (const item of items) {
+			// Fetch real menu item
+			const menuItem = await MenuItem.findById(item.menuItemId);
+
+			if (!menuItem) {
+				return res.status(404).json({
+					message: "Menu item not found",
+				});
+			}
+
+			// Availability check
+			if (!menuItem.isAvailable) {
+				return res.status(400).json({
+					message: `${menuItem.name} is unavailable`,
+				});
+			}
+
+			const quantity = Number(item.quantity);
+
+			// Item total
+			const itemTotal = menuItem.price * quantity;
+
+			subtotalAmount += itemTotal;
+
+			// Delivery estimation logic
+			estimatedDeliveryTime += menuItem.preparationTime * quantity;
+
+			// Secure item snapshot
+			secureItems.push({
+				menuItemId: menuItem._id,
+				name: menuItem.name,
+				price: menuItem.price,
+				quantity,
+			});
+		}
+
+		// Minimum fallback
+		if (estimatedDeliveryTime < 20) {
+			estimatedDeliveryTime = 20;
+		}
+
+		// ================= COUPON LOGIC =================
+
+		let coupon = null;
+		let discountAmount = 0;
+
+		if (couponCode) {
+			coupon = await Coupon.findOne({
+				code: couponCode.toUpperCase(),
+				isActive: true,
+			});
+
+			if (!coupon) {
+				return res.status(400).json({
+					message: "Invalid coupon",
+				});
+			}
+
+			// Expiry check
+			if (new Date() > coupon.expiryDate) {
+				return res.status(400).json({
+					message: "Coupon expired",
+				});
+			}
+
+			// Usage limit check
+			if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
+				return res.status(400).json({
+					message: "Coupon usage limit reached",
+				});
+			}
+
+			// Minimum amount check
+			if (subtotalAmount < coupon.minimumOrderAmount) {
+				return res.status(400).json({
+					message: `Minimum order amount is ₹${coupon.minimumOrderAmount}`,
+				});
+			}
+
+			// Calculate discount
+			if (coupon.discountType === "percentage") {
+				discountAmount = (subtotalAmount * coupon.discountValue) / 100;
+			} else {
+				discountAmount = coupon.discountValue;
+			}
+
+			// Prevent negative totals
+			if (discountAmount > subtotalAmount) {
+				discountAmount = subtotalAmount;
+			}
+
+			// Increment usage count
+			coupon.usedCount += 1;
+
+			await coupon.save();
+		}
+
+		// ================= FINAL TOTAL =================
+
+		const totalAmount = subtotalAmount - discountAmount;
+
+		// ================= ADDRESS SNAPSHOT =================
+
 		const addressSnapshot = {
 			fullName: addressDoc.fullName,
 			phone: addressDoc.phone,
@@ -34,21 +152,34 @@ exports.createOrder = async (req, res) => {
 			pincode: addressDoc.pincode,
 		};
 
+		// ================= CREATE ORDER =================
+
 		const order = await Order.create({
 			user: req.user.id,
-			items,
+			items: secureItems,
+
+			subtotalAmount,
+			discountAmount,
+
+			coupon: coupon ? coupon._id : null,
+
 			totalAmount,
+
 			address: addressSnapshot,
-			estimatedDeliveryTime: 30,
+
+			estimatedDeliveryTime,
 		});
 
 		res.status(201).json(order);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
-// Get logged-in user's orders
+// ================= USER =================
+
 exports.getUserOrders = async (req, res) => {
 	try {
 		const orders = await Order.find({ user: req.user.id }).sort({
