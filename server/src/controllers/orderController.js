@@ -6,7 +6,12 @@ const Coupon = require("../models/Coupon");
 // ================= CREATE ORDER =================
 exports.createOrder = async (req, res) => {
 	try {
-		const { items, address: addressId, couponCode } = req.body;
+		const {
+			items,
+			address: addressId,
+			couponCode,
+			paymentMethod = "cod",
+		} = req.body;
 
 		// Validate cart
 		if (!items || items.length === 0) {
@@ -19,6 +24,12 @@ exports.createOrder = async (req, res) => {
 		if (!addressId) {
 			return res.status(400).json({
 				message: "Address is required",
+			});
+		}
+		const validPaymentMethods = ["cod", "razorpay"];
+		if (!validPaymentMethods.includes(paymentMethod)) {
+			return res.status(400).json({
+				message: "Invalid payment method",
 			});
 		}
 
@@ -154,21 +165,30 @@ exports.createOrder = async (req, res) => {
 
 		// ================= CREATE ORDER =================
 
-		const order = await Order.create({
-			user: req.user.id,
-			items: secureItems,
+const order = await Order.create({
+	user: req.user.id,
 
-			subtotalAmount,
-			discountAmount,
+	items: secureItems,
 
-			coupon: coupon ? coupon._id : null,
+	subtotalAmount,
 
-			totalAmount,
+	discountAmount,
 
-			address: addressSnapshot,
+	coupon: coupon ? coupon._id : null,
 
-			estimatedDeliveryTime,
-		});
+	totalAmount,
+
+	address: addressSnapshot,
+
+	paymentMethod,
+
+	estimatedDeliveryTime,
+
+	// COD orders stay pending until delivery/payment
+	isPaid: false,
+
+	paymentStatus: "pending",
+});
 
 		res.status(201).json(order);
 	} catch (error) {
