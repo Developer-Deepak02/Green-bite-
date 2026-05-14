@@ -167,26 +167,22 @@ exports.createOrder = async (req, res) => {
 
 const order = await Order.create({
 	user: req.user.id,
-
 	items: secureItems,
-
 	subtotalAmount,
-
 	discountAmount,
-
 	coupon: coupon ? coupon._id : null,
-
 	totalAmount,
-
-	address: addressSnapshot,
-
+	address: addressSnapshot,	
 	paymentMethod,
-
+	statusHistory: [
+		{
+			status: "pending",
+		},
+	],
 	estimatedDeliveryTime,
 
 	// COD orders stay pending until delivery/payment
 	isPaid: false,
-
 	paymentStatus: "pending",
 });
 
@@ -209,6 +205,36 @@ exports.getUserOrders = async (req, res) => {
 		res.json({ orders });
 	} catch (error) {
 		res.status(500).json({ message: error.message });
+	}
+};
+
+// ================= GET SINGLE ORDER =================
+exports.getOrderById = async (req, res) => {
+	try {
+		const order = await Order.findById(req.params.id)
+			.populate("coupon", "code discountType discountValue");
+
+		if (!order) {
+			return res.status(404).json({
+				message: "Order not found",
+			});
+		}
+
+		// Owner or admin only
+		if (
+			order.user.toString() !== req.user.id &&
+			req.user.role !== "admin"
+		) {
+			return res.status(403).json({
+				message: "Not authorized",
+			});
+		}
+
+		res.json(order);
+	} catch (error) {
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
@@ -261,7 +287,48 @@ exports.updateOrderStatus = async (req, res) => {
 			});
 		}
 
+		// Prevent updates after delivery
+		if (order.status === "delivered") {
+			return res.status(400).json({
+				message: "Delivered orders cannot be updated",
+			});
+		}
+
+		// Prevent updates after cancellation
+		if (order.status === "cancelled") {
+			return res.status(400).json({
+				message: "Cancelled orders cannot be updated",
+			});
+		}
+
+		// Prevent same status update
+		if (order.status === status) {
+			return res.status(400).json({
+				message: "Order already has this status",
+			});
+		}
+
+		// Update status
 		order.status = status;
+
+		// Save timeline history
+		order.statusHistory.push({
+			status,
+			updatedAt: new Date(),
+		});
+
+		// Auto payment update for COD delivered orders
+		if (
+			status === "delivered" &&
+			order.paymentMethod === "cod"
+		) {
+			order.isPaid = true;
+
+			order.paymentStatus = "paid";
+
+			order.paidAt = new Date();
+		}
+
 		await order.save();
 
 		res.json({
@@ -269,6 +336,8 @@ exports.updateOrderStatus = async (req, res) => {
 			order,
 		});
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };

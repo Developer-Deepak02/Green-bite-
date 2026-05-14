@@ -4,6 +4,7 @@ const router = express.Router();
 const {
 	createOrder,
 	getUserOrders,
+	getOrderById,
 	getAllOrders,
 	updateOrderStatus,
 } = require("../controllers/orderController");
@@ -18,6 +19,8 @@ router.post("/", protect, createOrder);
 
 // Get user's orders
 router.get("/my", protect, getUserOrders);
+// Get single order details
+router.get("/:id", protect, getOrderById);
 
 // ================= ADMIN =================
 
