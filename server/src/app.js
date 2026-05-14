@@ -11,6 +11,7 @@ const reviewRoutes = require("./routes/reviewRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const cartRoutes = require("./routes/cartRoutes");
 
 
 const app = express();
@@ -28,6 +29,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/cart", cartRoutes);
 
 // CORS configuration
 app.use(

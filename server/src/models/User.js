@@ -1,5 +1,27 @@
 const mongoose = require("mongoose");
 
+// ================= CART ITEM SCHEMA =================
+
+const cartItemSchema = new mongoose.Schema(
+	{
+		menuItem: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "MenuItem",
+			required: true,
+		},
+
+		quantity: {
+			type: Number,
+			required: true,
+			min: 1,
+			default: 1,
+		},
+	},
+	{ _id: false },
+);
+
+// ================= USER SCHEMA =================
+
 const userSchema = new mongoose.Schema(
 	{
 		name: {
@@ -27,15 +49,25 @@ const userSchema = new mongoose.Schema(
 			default: "user",
 		},
 
+		// ================= WISHLIST =================
+
 		wishlist: [
 			{
 				type: mongoose.Schema.Types.ObjectId,
 				ref: "MenuItem",
 			},
 		],
+
+		// ================= CART =================
+
+		cart: {
+			type: [cartItemSchema],
+			default: [],
+		},
 	},
 	{ timestamps: true },
 );
+
 userSchema.index({ role: 1 });
 
 module.exports = mongoose.model("User", userSchema);
