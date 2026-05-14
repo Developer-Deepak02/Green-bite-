@@ -33,28 +33,118 @@ exports.createMenuItem = async (req, res) => {
 // GET ALL MENU ITEMS (Public)
 exports.getMenuItems = async (req, res) => {
 	try {
-		const { category, search } = req.query;
+		const {
+			category,
+			search,
+			minPrice,
+			maxPrice,
+			sort,
+			page = 1,
+			limit = 10,
+		} = req.query;
 
-		let query = { isAvailable: true };
+		// ================= QUERY =================
 
-		// Filter by category
+		let query = {
+			isAvailable: true,
+		};
+
+		// Category filter
 		if (category) {
 			query.category = category;
 		}
 
-		// Search by name (safe regex)
+		// Search filter
 		if (search) {
-			const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-			query.name = { $regex: escaped, $options: "i" };
+			const escaped = search.replace(
+				/[.*+?^${}()|[\]\\]/g,
+				"\\$&",
+			);
+
+			query.name = {
+				$regex: escaped,
+				$options: "i",
+			};
 		}
+
+		// Price filters
+		if (minPrice || maxPrice) {
+			query.price = {};
+
+			if (minPrice) {
+				query.price.$gte = Number(minPrice);
+			}
+
+			if (maxPrice) {
+				query.price.$lte = Number(maxPrice);
+			}
+		}
+
+		// ================= SORTING =================
+
+		let sortOption = {
+			createdAt: -1,
+		};
+
+		switch (sort) {
+			case "price_asc":
+				sortOption = { price: 1 };
+				break;
+
+			case "price_desc":
+				sortOption = { price: -1 };
+				break;
+
+			case "rating_desc":
+				sortOption = { ratingAverage: -1 };
+				break;
+
+			case "latest":
+				sortOption = { createdAt: -1 };
+				break;
+
+			default:
+				sortOption = { createdAt: -1 };
+		}
+
+		// ================= PAGINATION =================
+
+		const pageNumber = Number(page);
+		const limitNumber = Number(limit);
+
+		const skip = (pageNumber - 1) * limitNumber;
+
+		// ================= FETCH =================
+
+		const totalItems = await MenuItem.countDocuments(query);
 
 		const items = await MenuItem.find(query)
 			.populate("category", "name")
-			.sort({ createdAt: -1 });
+			.sort(sortOption)
+			.skip(skip)
+			.limit(limitNumber);
 
-		res.json(items);
+		// ================= RESPONSE =================
+
+		res.json({
+			items,
+
+			pagination: {
+				totalItems,
+
+				currentPage: pageNumber,
+
+				totalPages: Math.ceil(
+					totalItems / limitNumber,
+				),
+
+				limit: limitNumber,
+			},
+		});
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
