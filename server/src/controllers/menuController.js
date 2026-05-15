@@ -4,15 +4,23 @@ const MenuItem = require("../models/MenuItem");
 // CREATE MENU ITEM (Admin)
 exports.createMenuItem = async (req, res) => {
 	try {
-		const { name, description, price, category, image, preparationTime } =
-			req.body;
+		const {
+			name,
+			description,
+			price,
+			category,
+			preparationTime,
+		} = req.body;
 
-		// Basic validation
+		// Validation
 		if (!name || !price || !category) {
 			return res.status(400).json({
 				message: "Name, price and category are required",
 			});
 		}
+
+		// Uploaded image URL from Cloudinary
+		const image = req.file ? req.file.path : null;
 
 		const item = await MenuItem.create({
 			name,
@@ -25,7 +33,9 @@ exports.createMenuItem = async (req, res) => {
 
 		res.status(201).json(item);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
@@ -175,29 +185,42 @@ exports.updateMenuItem = async (req, res) => {
 			"description",
 			"price",
 			"category",
-			"image",
 			"preparationTime",
 		];
 
 		const updateData = {};
 
+		// Update normal fields
 		allowedFields.forEach((field) => {
 			if (req.body[field] !== undefined) {
 				updateData[field] = req.body[field];
 			}
 		});
 
-		const item = await MenuItem.findByIdAndUpdate(req.params.id, updateData, {
-			new: true,
-		});
+		// Update image if uploaded
+		if (req.file) {
+			updateData.image = req.file.path;
+		}
+
+		const item = await MenuItem.findByIdAndUpdate(
+			req.params.id,
+			updateData,
+			{
+				new: true,
+			}
+		);
 
 		if (!item) {
-			return res.status(404).json({ message: "Item not found" });
+			return res.status(404).json({
+				message: "Item not found",
+			});
 		}
 
 		res.json(item);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 

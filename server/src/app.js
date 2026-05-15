@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const authRoutes = require("./routes/authRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -13,34 +15,63 @@ const couponRoutes = require("./routes/couponRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 
-
 const app = express();
-app.use(cors());
-app.use(express.json());
 
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/menu", menuRoutes);
-app.use("/api/orders", orderRoutes);
-app.use("/api/addresses", addressRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/wishlist", wishlistRoutes);
-app.use("/api/coupons", couponRoutes);
-app.use("/api/payments", paymentRoutes);
-app.use("/api/cart", cartRoutes);
+// ================= SECURITY =================
 
-// CORS configuration
+// CORS
 app.use(
 	cors({
 		origin: "http://localhost:3000",
+		credentials: true,
 	}),
 );
 
-// Health check
+// JSON parser
+app.use(express.json());
+
+// Helmet security headers
+app.use(helmet());
+
+// Rate limiting
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 100,
+	message: "Too many requests, please try again later.",
+});
+
+app.use(limiter);
+
+// ================= ROUTES =================
+
+app.use("/api/auth", authRoutes);
+
+app.use("/api/categories", categoryRoutes);
+
+app.use("/api/menu", menuRoutes);
+
+app.use("/api/orders", orderRoutes);
+
+app.use("/api/addresses", addressRoutes);
+
+app.use("/api/admin", adminRoutes);
+
+app.use("/api/reviews", reviewRoutes);
+
+app.use("/api/wishlist", wishlistRoutes);
+
+app.use("/api/coupons", couponRoutes);
+
+app.use("/api/payments", paymentRoutes);
+
+app.use("/api/cart", cartRoutes);
+
+// ================= HEALTH CHECK =================
+
 app.get("/api/health", (req, res) => {
-	res.status(200).json({ message: "API is running" });
+	res.status(200).json({
+		message: "API is running",
+	});
 });
 
 module.exports = app;
