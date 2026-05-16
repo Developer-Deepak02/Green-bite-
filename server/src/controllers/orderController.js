@@ -2,6 +2,13 @@ const Order = require("../models/Order");
 const Address = require("../models/Address");
 const MenuItem = require("../models/MenuItem");
 const Coupon = require("../models/Coupon");
+const User = require("../models/User");
+
+const sendEmail = require("../emails/sendEmail");
+
+const orderConfirmationTemplate = require("../emails/templates/orderConfirmationTemplate");
+
+const orderDeliveredTemplate = require("../emails/templates/orderDeliveredTemplate");
 
 // ================= CREATE ORDER =================
 exports.createOrder = async (req, res) => {
@@ -26,7 +33,10 @@ exports.createOrder = async (req, res) => {
 				message: "Address is required",
 			});
 		}
+
+		// Validate payment method
 		const validPaymentMethods = ["cod", "razorpay"];
+
 		if (!validPaymentMethods.includes(paymentMethod)) {
 			return res.status(400).json({
 				message: "Invalid payment method",
@@ -75,7 +85,7 @@ exports.createOrder = async (req, res) => {
 
 			subtotalAmount += itemTotal;
 
-			// Delivery estimation logic
+			// Delivery estimation
 			estimatedDeliveryTime += menuItem.preparationTime * quantity;
 
 			// Secure item snapshot
@@ -116,14 +126,14 @@ exports.createOrder = async (req, res) => {
 				});
 			}
 
-			// Usage limit check
+			// Usage limit
 			if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
 				return res.status(400).json({
 					message: "Coupon usage limit reached",
 				});
 			}
 
-			// Minimum amount check
+			// Minimum order amount
 			if (subtotalAmount < coupon.minimumOrderAmount) {
 				return res.status(400).json({
 					message: `Minimum order amount is ₹${coupon.minimumOrderAmount}`,
@@ -165,26 +175,41 @@ exports.createOrder = async (req, res) => {
 
 		// ================= CREATE ORDER =================
 
-const order = await Order.create({
-	user: req.user.id,
-	items: secureItems,
-	subtotalAmount,
-	discountAmount,
-	coupon: coupon ? coupon._id : null,
-	totalAmount,
-	address: addressSnapshot,	
-	paymentMethod,
-	statusHistory: [
-		{
-			status: "pending",
-		},
-	],
-	estimatedDeliveryTime,
+		const order = await Order.create({
+			user: req.user.id,
+			items: secureItems,
+			subtotalAmount,
+			discountAmount,
+			coupon: coupon ? coupon._id : null,
+			totalAmount,
+			address: addressSnapshot,
+			paymentMethod,
+			statusHistory: [
+				{
+					status: "pending",
+				},
+			],
+			estimatedDeliveryTime,
 
-	// COD orders stay pending until delivery/payment
-	isPaid: false,
-	paymentStatus: "pending",
-});
+			// COD orders stay pending until payment/delivery
+			isPaid: false,
+			paymentStatus: "pending",
+		});
+
+		// ================= SEND ORDER EMAIL =================
+
+		const user = await User.findById(req.user.id);
+
+		await sendEmail({
+			to: user.email,
+			subject: "Order Confirmation - Greenbite",
+			html: orderConfirmationTemplate({
+				name: user.name,
+				order,
+			}),
+		});
+
+		// ================= RESPONSE =================
 
 		res.status(201).json(order);
 	} catch (error) {
@@ -196,23 +221,30 @@ const order = await Order.create({
 
 // ================= USER =================
 
+// Get logged-in user's orders
 exports.getUserOrders = async (req, res) => {
 	try {
-		const orders = await Order.find({ user: req.user.id }).sort({
+		const orders = await Order.find({
+			user: req.user.id,
+		}).sort({
 			createdAt: -1,
 		});
 
 		res.json({ orders });
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
 // ================= GET SINGLE ORDER =================
 exports.getOrderById = async (req, res) => {
 	try {
-		const order = await Order.findById(req.params.id)
-			.populate("coupon", "code discountType discountValue");
+		const order = await Order.findById(req.params.id).populate(
+			"coupon",
+			"code discountType discountValue",
+		);
 
 		if (!order) {
 			return res.status(404).json({
@@ -221,10 +253,7 @@ exports.getOrderById = async (req, res) => {
 		}
 
 		// Owner or admin only
-		if (
-			order.user.toString() !== req.user.id &&
-			req.user.role !== "admin"
-		) {
+		if (order.user.toString() !== req.user.id && req.user.role !== "admin") {
 			return res.status(403).json({
 				message: "Not authorized",
 			});
@@ -244,16 +273,18 @@ exports.getOrderById = async (req, res) => {
 exports.getAllOrders = async (req, res) => {
 	try {
 		const orders = await Order.find()
-			.populate("user", "name email") // optional
+			.populate("user", "name email")
 			.sort({ createdAt: -1 });
 
 		res.json({ orders });
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
-// Update order status (admin)
+// ================= UPDATE ORDER STATUS =================
 exports.updateOrderStatus = async (req, res) => {
 	try {
 		const { status } = req.body || {};
@@ -317,16 +348,26 @@ exports.updateOrderStatus = async (req, res) => {
 			updatedAt: new Date(),
 		});
 
-		// Auto payment update for COD delivered orders
-		if (
-			status === "delivered" &&
-			order.paymentMethod === "cod"
-		) {
+		// Auto payment update for COD
+		if (status === "delivered" && order.paymentMethod === "cod") {
 			order.isPaid = true;
-
 			order.paymentStatus = "paid";
-
 			order.paidAt = new Date();
+		}
+
+		// ================= DELIVERY EMAIL =================
+
+		if (status === "delivered") {
+			const user = await User.findById(order.user);
+
+			await sendEmail({
+				to: user.email,
+				subject: "Your Greenbite Order Was Delivered 🎉",
+				html: orderDeliveredTemplate({
+					name: user.name,
+					order,
+				}),
+			});
 		}
 
 		await order.save();
