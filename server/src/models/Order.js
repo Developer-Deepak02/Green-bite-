@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+
+// ================= ORDER ITEM SCHEMA =================
+
 const orderItemSchema = new mongoose.Schema(
 	{
 		menuItemId: {
@@ -22,8 +25,12 @@ const orderItemSchema = new mongoose.Schema(
 			min: 1,
 		},
 	},
-	{ _id: false }, // prevents unnecessary _id inside items array
+	{
+		_id: false,
+	},
 );
+
+// ================= ADDRESS SCHEMA =================
 
 const addressSchema = new mongoose.Schema(
 	{
@@ -57,8 +64,39 @@ const addressSchema = new mongoose.Schema(
 			required: true,
 		},
 	},
-	{ _id: false },
+	{
+		_id: false,
+	},
 );
+
+// ================= STATUS HISTORY SCHEMA =================
+
+const statusHistorySchema = new mongoose.Schema(
+	{
+		status: {
+			type: String,
+			enum: [
+				"pending",
+				"confirmed",
+				"preparing",
+				"out_for_delivery",
+				"delivered",
+				"cancelled",
+			],
+			required: true,
+		},
+
+		updatedAt: {
+			type: Date,
+			default: Date.now,
+		},
+	},
+	{
+		_id: false,
+	},
+);
+
+// ================= ORDER SCHEMA =================
 
 const orderSchema = new mongoose.Schema(
 	{
@@ -114,34 +152,20 @@ const orderSchema = new mongoose.Schema(
 			default: "pending",
 		},
 
-		statusHistory: [
-			{
-				status: {
-					type: String,
-					enum: [
-						"pending",
-						"confirmed",
-						"preparing",
-						"out_for_delivery",
-						"delivered",
-						"cancelled",
-					],
-					required: true,
-				},
-
-				updatedAt: {
-					type: Date,
-					default: Date.now,
-				},
-			},
-		],
+		statusHistory: {
+			type: [statusHistorySchema],
+			default: [],
+		},
 
 		isPaid: {
 			type: Boolean,
 			default: false,
 		},
 
-		paidAt: Date,
+		paidAt: {
+			type: Date,
+			default: null,
+		},
 
 		paymentStatus: {
 			type: String,
@@ -166,15 +190,62 @@ const orderSchema = new mongoose.Schema(
 		},
 
 		estimatedDeliveryTime: {
-			type: Number, // minutes
-			default: 30,
+			type: Number,
+			default: 30, // minutes
 		},
 	},
-	{ timestamps: true },
+	{
+		timestamps: true,
+		toJSON: {
+			virtuals: true,
+		},
+		toObject: {
+			virtuals: true,
+		},
+	},
 );
 
-orderSchema.index({ status: 1 });
-orderSchema.index({ createdAt: -1 });
-orderSchema.index({ user: 1 });
+// ================= DELIVERY TRACKING VIRTUALS =================
+
+const orderSteps = [
+	"pending",
+	"confirmed",
+	"preparing",
+	"out_for_delivery",
+	"delivered",
+];
+
+// Current active step
+orderSchema.virtual("currentStep").get(function () {
+	return orderSteps.indexOf(this.status) + 1;
+});
+
+// Total steps
+orderSchema.virtual("totalSteps").get(function () {
+	return orderSteps.length;
+});
+
+// Progress percentage
+orderSchema.virtual("progressPercentage").get(function () {
+	const currentStep = orderSteps.indexOf(this.status) + 1;
+
+	return Math.round((currentStep / orderSteps.length) * 100);
+});
+
+// ================= INDEXES =================
+
+orderSchema.index({
+	status: 1,
+});
+
+orderSchema.index({
+	createdAt: -1,
+});
+
+orderSchema.index({
+	user: 1,
+});
+
+// ================= EXPORT =================
 
 module.exports = mongoose.model("Order", orderSchema);
