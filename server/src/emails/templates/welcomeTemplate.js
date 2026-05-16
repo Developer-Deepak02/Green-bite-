@@ -1,12 +1,12 @@
 const welcomeTemplate = ({ name }) => {
 	return `
 		<div style="font-family: Arial; padding: 20px;">
-			<h1>Welcome to Greenbite 🍔</h1>
+			<h1>Welcome to BiteRush 🍔</h1>
 
 			<p>Hello ${name},</p>
 
 			<p>
-				Thank you for joining Greenbite.
+				Thank you for joining BiteRush.
 			</p>
 
 			<p>
@@ -24,7 +24,7 @@ const welcomeTemplate = ({ name }) => {
 				We are excited to serve you ❤️
 			</p>
 
-			<h3>Team Greenbite</h3>
+			<h3>Team BiteRush</h3>
 		</div>
 	`;
 };

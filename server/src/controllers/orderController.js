@@ -202,7 +202,7 @@ exports.createOrder = async (req, res) => {
 
 		await sendEmail({
 			to: user.email,
-			subject: "Order Confirmation - Greenbite",
+			subject: "Order Confirmation - BiteRush",
 			html: orderConfirmationTemplate({
 				name: user.name,
 				order,
@@ -362,7 +362,7 @@ exports.updateOrderStatus = async (req, res) => {
 
 			await sendEmail({
 				to: user.email,
-				subject: "Your Greenbite Order Was Delivered 🎉",
+				subject: "Your BiteRush Order Was Delivered 🎉",
 				html: orderDeliveredTemplate({
 					name: user.name,
 					order,

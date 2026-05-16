@@ -3,7 +3,7 @@ const transporter = require("../config/email");
 const sendEmail = async ({ to, subject, html }) => {
 	try {
 		await transporter.sendMail({
-			from: `"Greenbite" <${process.env.EMAIL_USER}>`,
+			from: `"BiteRush" <${process.env.EMAIL_USER}>`,
 			to,
 			subject,
 			html,

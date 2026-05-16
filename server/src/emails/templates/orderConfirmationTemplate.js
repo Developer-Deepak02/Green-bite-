@@ -31,7 +31,7 @@ const orderConfirmationTemplate = ({ name, order }) => {
 		</p>
 
 		<p>
-			Thank you for ordering from Greenbite ❤️
+			Thank you for ordering from BiteRush ❤️
 		</p>
 	`;
 };

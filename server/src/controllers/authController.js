@@ -59,7 +59,7 @@ exports.registerUser = async (req, res) => {
 
 		await sendEmail({
 			to: user.email,
-			subject: "Welcome to Greenbite 🍔",
+			subject: "Welcome to BiteRush 🍔",
 			html: welcomeTemplate({
 				name: user.name,
 			}),

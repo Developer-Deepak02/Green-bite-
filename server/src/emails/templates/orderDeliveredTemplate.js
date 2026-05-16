@@ -40,7 +40,7 @@ const orderDeliveredTemplate = ({ name, order }) => {
 				Your feedback helps us improve ❤️
 			</p>
 
-			<h3>Team Greenbite</h3>
+			<h3>Team BiteRush</h3>
 		</div>
 	`;
 };

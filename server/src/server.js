@@ -1,37 +1,25 @@
 require("dotenv").config();
-
 const app = require("./app");
-
 const connectDB = require("./config/db");
-
 const swaggerUi = require("swagger-ui-express");
-
 const swaggerJsdoc = require("swagger-jsdoc");
-
 // ================= DATABASE =================
-
 connectDB();
-
 // ================= SWAGGER CONFIG =================
 
 const swaggerOptions = {
 	definition: {
 		openapi: "3.0.0",
-
 		info: {
-			title: "Greenbite API",
-
+			title: "BiteRush API",
 			version: "1.0.0",
-
-			description: "API documentation for Greenbite Food Delivery Backend",
+			description: "API documentation for BiteRush Food Delivery Backend",
 		},
-
 		servers: [
 			{
 				url: `http://localhost:${process.env.PORT || 5000}`,
 			},
 		],
-
 		components: {
 			securitySchemes: {
 				bearerAuth: {
@@ -48,22 +36,15 @@ const swaggerOptions = {
 			},
 		],
 	},
-
 	apis: ["./src/routes/*.js"],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-
 // ================= SWAGGER ROUTE =================
-
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 // ================= SERVER =================
-
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
-
 	console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
 });

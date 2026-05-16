@@ -84,8 +84,8 @@ export default function Navbar() {
 								text-white
 							"
 						>
-							Green
-							<span className="text-orange-500">bite</span>
+							Bite
+							<span className="text-orange-500">Rush</span>
 						</h1>
 
 						<p
@@ -97,7 +97,7 @@ export default function Navbar() {
 								-mt-1
 							"
 						>
-							Food Delivery
+							Fresh • Fast • Delivered
 						</p>
 					</div>
 				</Link>

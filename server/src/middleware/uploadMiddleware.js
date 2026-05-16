@@ -8,7 +8,7 @@ const storage = new CloudinaryStorage({
 	cloudinary,
 
 	params: async (req, file) => ({
-		folder: "greenbite",
+		folder: "BiteRush",
 
 		allowed_formats: ["jpg", "jpeg", "png", "webp"],
 

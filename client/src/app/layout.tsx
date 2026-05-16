@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-	title: "Greenbite",
+	title: "BiteRush",
 	description: "Modern Food Delivery App",
 };
 
