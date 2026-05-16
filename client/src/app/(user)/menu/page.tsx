@@ -2,25 +2,44 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import { api } from "@/lib/api";
+
 import { MenuItem, Category } from "@/types";
+
 import { useCartStore } from "@/store/useCartStore";
 
 export default function MenuPage() {
 	const [menu, setMenu] = useState<MenuItem[]>([]);
+
 	const [categories, setCategories] = useState<Category[]>([]);
+
 	const [search, setSearch] = useState("");
+
 	const [selectedCategory, setSelectedCategory] = useState("");
+
 	const [loading, setLoading] = useState(true);
 
 	const addToCart = useCartStore((state) => state.addToCart);
 
-	// Load categories
+	// ================= LOAD CATEGORIES =================
+
 	useEffect(() => {
-		api.getCategories().then(setCategories).catch(console.error);
+		const fetchCategories = async () => {
+			try {
+				const res = await api.get("/categories");
+
+				setCategories(res.data);
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		fetchCategories();
 	}, []);
 
-	// Fetch menu (with debounce)
+	// ================= FETCH MENU =================
+
 	useEffect(() => {
 		const delay = setTimeout(() => {
 			const fetchMenu = async () => {
@@ -28,13 +47,21 @@ export default function MenuPage() {
 					setLoading(true);
 
 					let query = "?";
-					if (search) query += `search=${search}&`;
-					if (selectedCategory) query += `category=${selectedCategory}`;
 
-					const data = await api.getMenu(query);
-					setMenu(Array.isArray(data) ? data : []);
-				} catch (err) {
-					console.error(err);
+					if (search) {
+						query += `search=${search}&`;
+					}
+
+					if (selectedCategory) {
+						query += `category=${selectedCategory}`;
+					}
+
+					const res = await api.get(`/menu${query}`);
+
+					setMenu(res.data.items || []);
+				} catch (error) {
+					console.error(error);
+
 					setMenu([]);
 				} finally {
 					setLoading(false);
@@ -42,44 +69,48 @@ export default function MenuPage() {
 			};
 
 			fetchMenu();
-		}, 400); // debounce
+		}, 400);
 
 		return () => clearTimeout(delay);
 	}, [search, selectedCategory]);
 
 	return (
-		<div className="min-h-screen px-4 py-6 bg-background dark:bg-gray-900">
+		<div className="min-h-screen bg-[#F9FAFB] px-4 py-6">
 			{/* Header */}
-			<h1 className="text-3xl font-heading mb-6 text-text dark:text-white">
-				🍽 Menu
-			</h1>
 
-			<Link href="/cart" className="text-primary font-medium">
-				Go to Cart →
-			</Link>
+			<div className="mb-6 flex items-center justify-between">
+				<h1 className="font-heading text-3xl font-bold text-[#111827]">
+					🍽 Menu
+				</h1>
+
+				<Link
+					href="/cart"
+					className="rounded-xl bg-[#22C55E] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#16A34A]"
+				>
+					Cart
+				</Link>
+			</div>
 
 			{/* Search */}
+
 			<input
 				type="text"
-				placeholder="Search for food..."
+				placeholder="Search food..."
 				value={search}
 				onChange={(e) => setSearch(e.target.value)}
-				className="w-full mt-4 mb-5 px-4 py-2 rounded-xl border 
-        bg-white dark:bg-gray-800 
-        border-gray-300 dark:border-gray-700 
-        focus:outline-none focus:ring-2 focus:ring-primary"
+				className="mb-5 w-full rounded-2xl border border-[#E5E7EB] bg-white px-4 py-3 outline-none transition focus:border-[#22C55E]"
 			/>
 
 			{/* Categories */}
-			<div className="flex gap-2 overflow-x-auto mb-6">
+
+			<div className="mb-6 flex gap-3 overflow-x-auto pb-1">
 				<button
 					onClick={() => setSelectedCategory("")}
-					className={`px-4 py-1 rounded-full text-sm font-medium transition
-            ${
-							selectedCategory === ""
-								? "bg-primary text-white"
-								: "bg-gray-100 dark:bg-gray-800"
-						}`}
+					className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+						selectedCategory === ""
+							? "bg-[#22C55E] text-white"
+							: "bg-white text-[#111827] border border-[#E5E7EB]"
+					}`}
 				>
 					All
 				</button>
@@ -88,12 +119,11 @@ export default function MenuPage() {
 					<button
 						key={cat._id}
 						onClick={() => setSelectedCategory(cat._id)}
-						className={`px-4 py-1 rounded-full text-sm font-medium transition
-              ${
-								selectedCategory === cat._id
-									? "bg-primary text-white"
-									: "bg-gray-100 dark:bg-gray-800"
-							}`}
+						className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+							selectedCategory === cat._id
+								? "bg-[#22C55E] text-white"
+								: "bg-white text-[#111827] border border-[#E5E7EB]"
+						}`}
 					>
 						{cat.name}
 					</button>
@@ -101,20 +131,21 @@ export default function MenuPage() {
 			</div>
 
 			{/* Loading */}
+
 			{loading ? (
-				<p className="text-gray-500">Loading menu...</p>
+				<div className="py-10 text-center text-gray-500">Loading menu...</div>
 			) : menu.length === 0 ? (
-				<p className="text-gray-500">No items found</p>
+				<div className="py-10 text-center text-gray-500">No items found</div>
 			) : (
-				/* Menu Grid */
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+				<div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
 					{menu.map((item) => (
 						<div
 							key={item._id}
-							className="group overflow-hidden bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-md hover:shadow-lg transition-all duration-300"
+							className="overflow-hidden rounded-3xl bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
 						>
-							{/* Food Image */}
-							<div className="relative h-40 overflow-hidden">
+							{/* Image */}
+
+							<div className="relative h-52 overflow-hidden">
 								<img
 									src={
 										item.image && item.image.trim() !== ""
@@ -122,56 +153,37 @@ export default function MenuPage() {
 											: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200&auto=format&fit=crop"
 									}
 									alt={item.name}
-									onError={(e) => {
-										e.currentTarget.src =
-											"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1200&auto=format&fit=crop";
-									}}
-									className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+									className="h-full w-full object-cover transition duration-300 hover:scale-105"
 								/>
 
-								{/* Rating */}
-								<div
-									className="absolute top-3 left-3 
-				bg-white/90 dark:bg-black/70 backdrop-blur-sm
-				px-3 py-1 rounded-full text-sm font-semibold"
-								>
+								<div className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-sm font-semibold shadow">
 									⭐ {item.ratingAverage?.toFixed(1) || "0.0"}
-								</div>
-
-								{/* Availability */}
-								<div
-									className={`absolute top-3 right-3 
-				px-3 py-1 rounded-full text-xs font-semibold text-white
-				${item.isAvailable ? "bg-green-600" : "bg-red-500"}`}
-								>
-									{item.isAvailable ? "Available" : "Unavailable"}
 								</div>
 							</div>
 
 							{/* Content */}
-							<div className="p-3">
-								<div className="flex justify-between items-start gap-3">
+
+							<div className="p-4">
+								<div className="mb-2 flex items-start justify-between gap-3">
 									<div>
-										<h2 className="text-base font-heading text-gray-900 dark:text-white">
+										<h2 className="font-heading text-lg font-semibold text-[#111827]">
 											{item.name}
 										</h2>
 
-										<p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-2">
+										<p className="mt-1 line-clamp-2 text-sm text-gray-500">
 											{item.description}
 										</p>
 									</div>
 
-									<div className="text-primary font-bold text-base whitespace-nowrap">
+									<div className="text-lg font-bold text-[#22C55E]">
 										₹{item.price}
 									</div>
 								</div>
 
-								{/* Prep Time */}
-								<div className="mt-2 text-sm text-gray-500">
+								<div className="mb-4 text-sm text-gray-500">
 									⏱ {item.preparationTime || 15} mins
 								</div>
 
-								{/* Add Button */}
 								<button
 									disabled={!item.isAvailable}
 									onClick={() =>
@@ -182,12 +194,11 @@ export default function MenuPage() {
 											quantity: 1,
 										})
 									}
-									className={`mt-3 w-full py-1.5 rounded-lg text-sm font-medium transition
-				${
-					item.isAvailable
-						? "bg-primary hover:bg-primary-dark text-white"
-						: "bg-gray-300 cursor-not-allowed text-gray-500"
-				}`}
+									className={`w-full rounded-xl py-3 text-sm font-semibold transition ${
+										item.isAvailable
+											? "bg-[#22C55E] text-white hover:bg-[#16A34A]"
+											: "cursor-not-allowed bg-gray-300 text-gray-500"
+									}`}
 								>
 									{item.isAvailable ? "Add to Cart" : "Unavailable"}
 								</button>
