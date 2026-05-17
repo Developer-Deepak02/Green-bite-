@@ -1,22 +1,16 @@
 "use client";
-
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-
 import { ShoppingCart, User, Menu, Search, HandPlatter, X } from "lucide-react";
-
+import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/useCartStore";
-
 export default function Navbar() {
 	const pathname = usePathname();
-
 	const [mobileOpen, setMobileOpen] = useState(false);
-
+	const [scrolled, setScrolled] = useState(false);
 	const items = useCartStore((state) => state.items);
-
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-
 	const navLinks = [
 		{
 			name: "Home",
@@ -40,40 +34,81 @@ export default function Navbar() {
 		},
 	];
 
+	useEffect(() => {
+		const handleScroll = () => {
+			setScrolled(window.scrollY > 10);
+		};
+		window.addEventListener("scroll", handleScroll);
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
 	return (
 		<header
-			className="
+			className={`
 				sticky top-0 z-50
-				backdrop-blur-xl
-				bg-[#0B1220]/80
-				border-b border-gray-800
-			"
+				w-full
+				transition-all duration-300
+				${
+					scrolled
+						? "bg-[#0B1220]/85 backdrop-blur-2xl border-b border-white/10"
+						: "bg-transparent"
+				}
+			`}
 		>
 			<div
 				className="
-					max-w-7xl mx-auto
-					h-16
+					w-full
+					h-20
 					px-4
+					md:px-6
+					xl:px-10
+					2xl:px-14
 					flex items-center justify-between
 				"
 			>
 				{/* LEFT */}
-				<Link href="/" className="flex items-center gap-3 group">
+
+				<Link
+					href="/"
+					className="
+						flex items-center gap-4
+						group
+						flex-shrink-0
+					"
+				>
+					{/* LOGO */}
+
 					<div
 						className="
-							w-11 h-11
+							relative
+							w-12 h-12
 							rounded-2xl
 							bg-gradient-to-br
 							from-orange-400
 							to-orange-600
 							flex items-center justify-center
-							shadow-lg shadow-orange-500/20
+							shadow-lg shadow-orange-500/25
 							group-hover:scale-105
 							transition-all duration-300
+							overflow-hidden
 						"
 					>
-						<HandPlatter className="w-5 h-5 text-white" />
+						<div
+							className="
+								absolute inset-0
+								bg-white/10
+								opacity-0
+								group-hover:opacity-100
+								transition-opacity duration-300
+							"
+						/>
+
+						<HandPlatter className="w-5 h-5 text-white relative z-10" />
 					</div>
+
+					{/* BRAND */}
 
 					<div className="leading-tight">
 						<h1
@@ -85,15 +120,22 @@ export default function Navbar() {
 							"
 						>
 							Bite
-							<span className="text-orange-500">Rush</span>
+							<span
+								className="
+									text-orange-500
+									drop-shadow-[0_0_20px_rgba(249,115,22,0.35)]
+								"
+							>
+								Rush
+							</span>
 						</h1>
 
 						<p
 							className="
 								text-[11px]
-								text-gray-400
+								text-gray-500
 								uppercase
-								tracking-[0.2em]
+								tracking-[0.22em]
 								-mt-1
 							"
 						>
@@ -103,7 +145,14 @@ export default function Navbar() {
 				</Link>
 
 				{/* CENTER NAV */}
-				<nav className="hidden md:flex items-center gap-8">
+
+				<nav
+					className="
+						hidden lg:flex
+						items-center
+						gap-10
+					"
+				>
 					{navLinks.map((link) => {
 						const active = pathname === link.href;
 
@@ -112,108 +161,138 @@ export default function Navbar() {
 								key={link.name}
 								href={link.href}
 								className={`
-									text-sm font-medium
-									transition-colors duration-200
+									relative
+									text-sm
+									font-medium
+									transition-all duration-300
 									hover:text-white
-									${active ? "text-orange-500" : "text-gray-300"}
+									${active ? "text-orange-500" : "text-gray-400"}
 								`}
 							>
 								{link.name}
+
+								{active && (
+									<div
+										className="
+											absolute
+											-top-2
+											left-1/2
+											-translate-x-1/2
+											w-1.5 h-1.5
+											rounded-full
+											bg-orange-500
+										"
+									/>
+								)}
 							</Link>
 						);
 					})}
 				</nav>
 
 				{/* RIGHT */}
+
 				<div className="flex items-center gap-3">
-					{/* Search */}
-					<button
+					{/* SEARCH */}
+
+					<Button
+						size="icon"
+						variant="outline"
 						className="
 							hidden sm:flex
 							w-11 h-11
-							rounded-xl
-							cursor-pointer
-							bg-white/5
-							border border-white/5
-							items-center justify-center
+							rounded-2xl
+							border-white/10
+							bg-white/[0.03]
+							backdrop-blur-xl
 							text-gray-300
 							hover:bg-white/10
 							hover:text-white
-							transition-all duration-300
+							hover:border-white/20
 						"
 					>
 						<Search className="w-5 h-5" />
-					</button>
+					</Button>
 
-					{/* Cart */}
-					<Link
-						href="/cart"
-						className="
-							relative hidden sm:flex
-							w-11 h-11
-							rounded-xl
-							bg-white/5
-							border border-white/5
-							flex items-center justify-center
-							text-gray-300
-							hover:bg-white/10
-							hover:text-white
-							transition-all duration-300
-						"
-					>
-						<ShoppingCart className="w-5 h-5" />
+					{/* CART */}
 
-						{totalItems > 0 && (
-							<span
-								className="
-									absolute -top-1 -right-1
-									bg-orange-500
-									text-white
-									text-[10px]
-									font-bold
-									min-w-[18px]
-									h-[18px]
-									rounded-full
-									flex items-center justify-center
-									px-1
-								"
-							>
-								{totalItems}
-							</span>
-						)}
+					<Link href="/cart">
+						<Button
+							size="icon"
+							variant="outline"
+							className="
+								hidden sm:flex
+								relative
+								w-11 h-11
+								rounded-2xl
+								border-white/10
+								bg-white/[0.03]
+								backdrop-blur-xl
+								text-gray-300
+								hover:bg-white/10
+								hover:text-white
+								hover:border-white/20
+							"
+						>
+							<ShoppingCart className="w-5 h-5" />
+
+							{totalItems > 0 && (
+								<div
+									className="
+										absolute
+										-top-1
+										-right-1
+										min-w-[20px]
+										h-5
+										rounded-full
+										bg-orange-500
+										text-white
+										text-[10px]
+										font-bold
+										flex items-center justify-center
+										px-1
+										shadow-lg shadow-orange-500/30
+									"
+								>
+									{totalItems}
+								</div>
+							)}
+						</Button>
 					</Link>
 
-					{/* Sign In */}
-					<Link
-						href="/login"
-						className="
-							hidden sm:flex
-							items-center gap-2
-							px-5 py-2.5
-							rounded-full
-							bg-orange-500
-							text-white
-							font-semibold
-							text-sm
-							hover:bg-orange-600
-							transition-all duration-300
-							shadow-lg shadow-orange-500/20
-						"
-					>
-						<User className="w-4 h-4" />
-						Sign In
+					{/* SIGN IN */}
+
+					<Link href="/login">
+						<Button
+							className="
+								hidden sm:flex
+								h-11
+								px-5
+								rounded-2xl
+								bg-orange-500
+								hover:bg-orange-600
+								text-white
+								font-semibold
+								shadow-lg shadow-orange-500/20
+							"
+						>
+							<User className="w-4 h-4 mr-2" />
+							Sign In
+						</Button>
 					</Link>
 
-					{/* Mobile Menu Button */}
-					<button
+					{/* MOBILE MENU BUTTON */}
+
+					<Button
+						size="icon"
+						variant="outline"
 						onClick={() => setMobileOpen(!mobileOpen)}
 						className="
-							md:hidden
+							lg:hidden
 							w-11 h-11
-							rounded-xl
-							bg-white/5
-							border border-white/5
-							flex items-center justify-center
+							rounded-2xl
+							border-white/10
+							bg-white/[0.03]
+							backdrop-blur-xl
 							text-white
 						"
 					>
@@ -222,21 +301,28 @@ export default function Navbar() {
 						) : (
 							<Menu className="w-5 h-5" />
 						)}
-					</button>
+					</Button>
 				</div>
 			</div>
 
 			{/* MOBILE MENU */}
+
 			{mobileOpen && (
 				<div
 					className="
-						md:hidden
-						px-4 pb-4
-						bg-[#0B1220]
-						border-t border-gray-800
+						lg:hidden
+						border-t border-white/10
+						bg-[#0B1220]/95
+						backdrop-blur-2xl
 					"
 				>
-					<div className="flex flex-col gap-1 pt-3">
+					<div
+						className="
+							px-4
+							py-5
+							space-y-2
+						"
+					>
 						{navLinks.map((link) => {
 							const active = pathname === link.href;
 
@@ -246,14 +332,17 @@ export default function Navbar() {
 									href={link.href}
 									onClick={() => setMobileOpen(false)}
 									className={`
-										px-4 py-3
-										rounded-xl
-										text-sm font-medium
-										transition-all
+										flex items-center
+										h-12
+										px-4
+										rounded-2xl
+										text-sm
+										font-medium
+										transition-all duration-300
 										${
 											active
-												? "text-orange-500 bg-white/5"
-												: "text-gray-300 hover:text-white hover:bg-white/5"
+												? "bg-orange-500/10 text-orange-500 border border-orange-500/20"
+												: "text-gray-300 hover:bg-white/[0.03] hover:text-white"
 										}
 									`}
 								>
@@ -266,18 +355,24 @@ export default function Navbar() {
 							href="/login"
 							onClick={() => setMobileOpen(false)}
 							className="
-								mt-2
-								bg-orange-500
-								hover:bg-orange-600
-								text-white
-								rounded-xl
-								px-4 py-3
-								text-sm font-semibold
-								text-center
-								transition-all duration-300
+								block
+								mt-4
 							"
 						>
-							Sign In
+							<Button
+								className="
+									w-full
+									h-12
+									rounded-2xl
+									bg-orange-500
+									hover:bg-orange-600
+									text-white
+									font-semibold
+								"
+							>
+								<User className="w-4 h-4 mr-2" />
+								Sign In
+							</Button>
 						</Link>
 					</div>
 				</div>

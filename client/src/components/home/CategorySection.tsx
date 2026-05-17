@@ -7,6 +7,8 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { Category } from "@/types";
 
+import { Button } from "@/components/ui/button";
+
 const categoryImages: Record<string, string> = {
 	pizza:
 		"https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=1200&auto=format&fit=crop",
@@ -29,8 +31,11 @@ const categoryImages: Record<string, string> = {
 
 export default function CategorySection() {
 	const sliderRef = useRef<HTMLDivElement>(null);
+
 	const [categories, setCategories] = useState<Category[]>([]);
 	const [loading, setLoading] = useState(true);
+
+	const [activeIndex, setActiveIndex] = useState(0);
 
 	useEffect(() => {
 		const fetchCategories = async () => {
@@ -44,40 +49,50 @@ export default function CategorySection() {
 				setLoading(false);
 			}
 		};
+
 		fetchCategories();
 	}, []);
 
 	const scrollLeft = () => {
 		if (sliderRef.current) {
 			sliderRef.current.scrollBy({
-				left: -300,
+				left: -420,
 				behavior: "smooth",
 			});
+
+			setActiveIndex((prev) => (prev > 0 ? prev - 1 : prev));
 		}
 	};
 
 	const scrollRight = () => {
 		if (sliderRef.current) {
 			sliderRef.current.scrollBy({
-				left: 300,
+				left: 420,
 				behavior: "smooth",
 			});
+
+			setActiveIndex((prev) =>
+				prev < categories.length - 1 ? prev + 1 : prev,
+			);
 		}
 	};
 
 	const getCategoryImage = (name: string) => {
 		const lower = name.toLowerCase();
+
 		if (lower.includes("pizza")) return categoryImages.pizza;
 		if (lower.includes("burger")) return categoryImages.burger;
 		if (lower.includes("pasta")) return categoryImages.pasta;
 		if (lower.includes("dessert")) return categoryImages.dessert;
 		if (lower.includes("drink")) return categoryImages.drink;
+
 		return categoryImages.default;
 	};
 
 	return (
-		<section className="relative py-20 overflow-hidden bg-[#0B1220]">
-			{/* Premium Glow */}
+		<section className="relative py-28 overflow-hidden">
+			{/* BACKGROUND EFFECTS */}
+
 			<div
 				className="
 					absolute
@@ -85,63 +100,133 @@ export default function CategorySection() {
 					left-1/2
 					-translate-x-1/2
 					-translate-y-1/2
-					w-[600px]
-					h-[600px]
+					w-[850px]
+					h-[850px]
 					bg-orange-500/10
-					blur-[160px]
+					blur-[220px]
 					rounded-full
 					pointer-events-none
 				"
 			/>
 
-			<div className="max-w-7xl mx-auto px-4 relative z-10">
-				{/* Header */}
-				<div className="flex items-end justify-between mb-10">
-					<div>
-						<p className="text-orange-500 font-medium mb-2">
-							Explore Categories
-						</p>
+			<div
+				className="
+					absolute
+					left-0
+					top-0
+					w-full
+					h-full
+					bg-[radial-gradient(circle_at_top_left,rgba(249,115,22,0.08),transparent_30%)]
+					pointer-events-none
+				"
+			/>
 
-						<h2
+			<div
+				className="
+					relative z-10
+					px-4
+					md:px-8
+					xl:px-12
+				"
+			>
+				{/* SECTION HEADER */}
+
+				<div
+					className="
+						relative
+						flex
+						flex-col
+						items-center
+						justify-center
+						text-center
+						mb-16
+					"
+				>
+					<div className="space-y-5">
+						<div
 							className="
-								text-3xl
-								md:text-4xl
-								font-black
-								text-white
+								inline-flex
+								items-center
+								bg-orange-500/10
+								border border-orange-500/20
+								backdrop-blur-xl
+								text-orange-400
+								text-sm
+								font-medium
+								px-4 py-2
+								rounded-full
 							"
 						>
-							Popular Categories
-						</h2>
+							Explore Categories
+						</div>
+
+						<div className="space-y-4">
+							<h2
+								className="
+									text-4xl
+									md:text-5xl
+									lg:text-6xl
+									font-black
+									text-white
+									leading-none
+									tracking-tight
+								"
+							>
+								Choose Your
+								<span className="text-orange-500"> Favorite Taste</span>
+							</h2>
+
+							<p
+								className="
+									text-gray-400
+									text-lg
+									max-w-2xl
+									leading-relaxed
+									mx-auto
+								"
+							>
+								Explore handcrafted dishes prepared fresh with premium
+								ingredients and unforgettable flavors.
+							</p>
+						</div>
 					</div>
 
-					<button
+					<Button
+						variant="ghost"
 						className="
-							hidden md:flex
-							items-center gap-1
-							text-sm
+							hidden lg:flex
+							items-center gap-2
+							h-12
+							px-5
+							rounded-2xl
 							text-gray-400
 							hover:text-orange-500
-							transition-colors duration-300
+							hover:bg-white/[0.03]
+							absolute
+							right-0
+							top-1/2
+							-translate-y-1/2
 						"
 					>
 						View All
 						<ChevronRight className="w-4 h-4" />
-					</button>
+					</Button>
 				</div>
 
-				{/* Loading State */}
+				{/* LOADING */}
+
 				{loading ? (
-					<div className="flex gap-5 overflow-hidden">
-						{[1, 2, 3].map((item) => (
+					<div className="flex gap-7 overflow-hidden">
+						{[1, 2, 3, 4].map((item) => (
 							<div
 								key={item}
 								className="
-									min-w-[220px]
-									md:min-w-[240px]
-									h-[260px]
-									bg-white/5
+									min-w-[280px]
+									md:min-w-[340px]
+									h-[420px]
+									rounded-[36px]
+									bg-white/[0.03]
 									border border-white/10
-									rounded-3xl
 									animate-pulse
 								"
 							/>
@@ -151,7 +236,7 @@ export default function CategorySection() {
 					<div
 						className="
 							text-center
-							py-16
+							py-24
 							text-gray-400
 						"
 					>
@@ -159,14 +244,16 @@ export default function CategorySection() {
 					</div>
 				) : (
 					<div className="relative">
-						{/* Categories */}
+						{/* SLIDER */}
+
 						<div
 							ref={sliderRef}
 							className="
-								flex gap-5
+								flex
+								gap-7
 								overflow-x-auto
 								scroll-smooth
-								pb-4
+								pb-8
 								pr-4
 								[&::-webkit-scrollbar]:hidden
 								[-ms-overflow-style:none]
@@ -178,22 +265,35 @@ export default function CategorySection() {
 									key={category._id}
 									className="
 										group
-										min-w-[220px]
-										md:min-w-[240px]
-										bg-white/[0.04]
-										border border-white/10
-										backdrop-blur-xl
-										rounded-3xl
+										relative
+										min-w-[280px]
+										md:min-w-[340px]
+										h-[420px]
+										rounded-[36px]
 										overflow-hidden
+										border border-white/10
+										bg-white/[0.03]
+										backdrop-blur-2xl
 										cursor-pointer
-										hover:border-orange-500
-										hover:shadow-[0_0_25px_rgba(249,115,22,0.18)]
-										hover:-translate-y-1
-										transition-all duration-300
+										transition-all duration-500
+										hover:-translate-y-3
+										hover:border-orange-500/40
+
+										before:absolute
+										before:inset-0
+										before:rounded-[36px]
+										before:bg-orange-500/0
+										before:blur-3xl
+										before:transition-all
+										before:duration-500
+										group-hover:before:bg-orange-500/10
+
+										hover:shadow-[0_0_80px_rgba(249,115,22,0.18)]
 									"
 								>
-									{/* Image */}
-									<div className="relative h-44 overflow-hidden">
+									{/* IMAGE */}
+
+									<div className="absolute inset-0 overflow-hidden">
 										<Image
 											src={getCategoryImage(category.name)}
 											alt={category.name}
@@ -202,7 +302,7 @@ export default function CategorySection() {
 												object-cover
 												group-hover:scale-110
 												transition-transform
-												duration-500
+												duration-700
 											"
 										/>
 
@@ -210,85 +310,161 @@ export default function CategorySection() {
 											className="
 												absolute inset-0
 												bg-gradient-to-t
-												from-black/80
-												via-black/20
-												to-transparent
+												from-black/95
+												via-black/35
+												to-black/10
 											"
 										/>
 									</div>
 
-									{/* Content */}
-									<div className="p-5">
-										<h3
-											className="
-												text-xl
-												font-bold
-												text-white
-												mb-1
-											"
-										>
-											{category.name}
-										</h3>
+									{/* CONTENT */}
 
-										<p className="text-sm text-gray-400">Fresh & Delicious</p>
+									<div
+										className="
+											relative
+											h-full
+											p-8
+											flex
+											flex-col
+											justify-between
+										"
+									>
+										<div>
+											<div
+												className="
+													inline-flex
+													items-center
+													bg-orange-500/15
+													border border-orange-500/20
+													backdrop-blur-xl
+													text-orange-400
+													text-xs
+													font-medium
+													px-3 py-1.5
+													rounded-full
+												"
+											>
+												Popular Choice
+											</div>
+										</div>
+
+										<div className="space-y-4">
+											<h3
+												className="
+													text-4xl
+													font-black
+													text-white
+													tracking-tight
+												"
+											>
+												{category.name}
+											</h3>
+
+											<p
+												className="
+													text-gray-300
+													text-base
+													leading-relaxed
+													max-w-[260px]
+												"
+											>
+												Freshly crafted dishes prepared with bold flavors and
+												premium ingredients.
+											</p>
+
+											<Button
+												className="
+													mt-2
+													h-12
+													px-5
+													rounded-2xl
+													bg-orange-500
+													hover:bg-orange-600
+													text-white
+													font-semibold
+													shadow-lg shadow-orange-500/20
+												"
+											>
+												Explore Menu
+											</Button>
+										</div>
 									</div>
 								</div>
 							))}
 						</div>
 
-						{/* Navigation Buttons */}
+						{/* CONTROLS */}
+
 						<div
 							className="
 								hidden md:flex
-								items-center gap-3
-								justify-end
-								mt-6
+								items-center
+								justify-center
+								relative
+								mt-10
 							"
 						>
-							<button
-								onClick={scrollLeft}
+							{/* INDICATOR */}
+
+							<div className="flex items-center gap-2">
+								{categories.map((_, index) => (
+									<div
+										key={index}
+										className={`
+											h-1 rounded-full transition-all duration-300
+											${activeIndex === index ? "w-12 bg-orange-500" : "w-4 bg-white/15"}
+										`}
+									/>
+								))}
+							</div>
+
+							{/* NAVIGATION */}
+
+							<div
 								className="
-									w-11 h-11
-									rounded-full
-									bg-white/5
-									border border-white/10
-									flex items-center justify-center
-									text-gray-300
-									hover:bg-orange-500
-									hover:border-orange-500
-									hover:text-white
-									transition-all duration-300
+									absolute
+									right-0
+									flex items-center gap-4
 								"
 							>
-								<ChevronLeft className="w-5 h-5" />
-							</button>
+								<Button
+									size="icon"
+									variant="outline"
+									onClick={scrollLeft}
+									className="
+										w-13 h-13
+										rounded-full
+										border-white/10
+										bg-white/[0.03]
+										backdrop-blur-xl
+										text-gray-300
+										hover:bg-orange-500
+										hover:border-orange-500
+										hover:text-white
+									"
+								>
+									<ChevronLeft className="w-5 h-5" />
+								</Button>
 
-							<button
-								onClick={scrollRight}
-								className="
-									w-11 h-11
-									rounded-full
-									bg-white/5
-									border border-white/10
-									flex items-center justify-center
-									text-gray-300
-									hover:bg-orange-500
-									hover:border-orange-500
-									hover:text-white
-									transition-all duration-300
-								"
-							>
-								<ChevronRight className="w-5 h-5" />
-							</button>
-						</div>
-
-						{/* Slider Indicator */}
-						<div className="flex justify-center mt-5 gap-2">
-							<div className="w-10 h-1 rounded-full bg-orange-500" />
-
-							<div className="w-4 h-1 rounded-full bg-white/20" />
-
-							<div className="w-4 h-1 rounded-full bg-white/20" />
+								<Button
+									size="icon"
+									variant="outline"
+									onClick={scrollRight}
+									className="
+										w-13 h-13
+										rounded-full
+										border-white/10
+										bg-white/[0.03]
+										backdrop-blur-xl
+										text-gray-300
+										hover:bg-orange-500
+										hover:border-orange-500
+										hover:text-white
+									"
+								>
+									<ChevronRight className="w-5 h-5" />
+								</Button>
+							</div>
 						</div>
 					</div>
 				)}
