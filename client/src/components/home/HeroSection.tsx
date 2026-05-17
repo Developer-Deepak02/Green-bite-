@@ -211,18 +211,19 @@ export default function HomePage() {
 
 							<div
 								className="
-									absolute
-									bottom-28
-									left-[-30px]
-									bg-[#111827]/95
-									border border-gray-800
-									backdrop-blur-xl
-									rounded-2xl
-									shadow-2xl shadow-black/50
-									flex items-center gap-3
-									px-5 py-4
-									min-w-[230px]
-								"
+		hidden sm:flex
+		absolute
+		bottom-35
+		-left-6
+		items-center
+		gap-3
+		bg-[#111827]/95
+		backdrop-blur-xl
+		border border-white/10
+		rounded-2xl
+		px-4 py-3
+		shadow-2xl shadow-black/50
+	"
 							>
 								<div
 									className="

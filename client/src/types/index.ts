@@ -1,6 +1,10 @@
 export interface Category {
 	_id: string;
 	name: string;
+	image?: string;
+	itemCount?: number;
+	description?: string;
+	isFeatured?: boolean;
 }
 
 export interface MenuItem {

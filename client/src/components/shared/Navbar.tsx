@@ -149,7 +149,7 @@ export default function Navbar() {
 					<Link
 						href="/cart"
 						className="
-							relative
+							relative hidden sm:flex
 							w-11 h-11
 							rounded-xl
 							bg-white/5
