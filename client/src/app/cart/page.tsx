@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
 	ArrowRight,
 	MapPin,
@@ -14,7 +14,6 @@ import {
 	CreditCard,
 	Wallet,
 } from "lucide-react";
-
 import { useCartStore } from "@/store/useCartStore";
 
 declare global {
@@ -286,6 +285,7 @@ export default function CartPage() {
 	}
 
 	return (
+		<ProtectedRoute>
 		<section className="relative min-h-screen bg-[#020817] overflow-hidden">
 			<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-orange-500/10 blur-[180px] rounded-full pointer-events-none" />
 
@@ -629,5 +629,6 @@ export default function CartPage() {
 				</div>
 			</div>
 		</section>
+		</ProtectedRoute>
 	);
 }

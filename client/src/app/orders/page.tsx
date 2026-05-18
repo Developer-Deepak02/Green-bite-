@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
 	Clock3,
 	MapPin,
@@ -124,8 +124,9 @@ export default function OrdersPage() {
 	}
 
 	return (
-		<section className="relative overflow-hidden min-h-screen">
-			{/* BACKGROUND GLOW */}
+		<ProtectedRoute>
+			<section className="relative overflow-hidden min-h-screen">
+				{/* BACKGROUND GLOW */}
 
 			<div
 				className="
@@ -554,5 +555,6 @@ export default function OrdersPage() {
 				)}
 			</div>
 		</section>
+		</ProtectedRoute>
 	);
 }

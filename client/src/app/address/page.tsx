@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
 	MapPin,
 	Plus,
@@ -133,11 +133,12 @@ export default function AddressPage() {
 	};
 
 	return (
-		<section className="relative min-h-screen bg-[#020817] overflow-hidden">
-			{/* BG GLOW */}
+		<ProtectedRoute>
+			<section className="relative min-h-screen bg-[#020817] overflow-hidden">
+				{/* BG GLOW */}
 
-			<div
-				className="
+				<div
+					className="
 					absolute
 					top-0
 					left-1/2
@@ -149,15 +150,15 @@ export default function AddressPage() {
 					rounded-full
 					pointer-events-none
 				"
-			/>
+				/>
 
-			<div className="relative z-10 px-4 md:px-6 py-8">
-				{/* HEADER */}
+				<div className="relative z-10 px-4 md:px-6 py-8">
+					{/* HEADER */}
 
-				<div className="max-w-7xl mx-auto mb-8">
-					<div className="space-y-3">
-						<div
-							className="
+					<div className="max-w-7xl mx-auto mb-8">
+						<div className="space-y-3">
+							<div
+								className="
 								inline-flex
 								items-center
 								gap-2
@@ -169,29 +170,29 @@ export default function AddressPage() {
 								text-sm
 								font-medium
 							"
-						>
-							<MapPin className="w-4 h-4" />
-							Saved Addresses
+							>
+								<MapPin className="w-4 h-4" />
+								Saved Addresses
+							</div>
+
+							<h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
+								Manage Your
+								<span className="text-orange-500"> Addresses</span>
+							</h1>
+
+							<p className="text-gray-400 max-w-2xl">
+								Add and manage delivery locations for faster checkout.
+							</p>
 						</div>
-
-						<h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
-							Manage Your
-							<span className="text-orange-500"> Addresses</span>
-						</h1>
-
-						<p className="text-gray-400 max-w-2xl">
-							Add and manage delivery locations for faster checkout.
-						</p>
 					</div>
-				</div>
 
-				{/* CONTENT */}
+					{/* CONTENT */}
 
-				<div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-6">
-					{/* FORM */}
+					<div className="max-w-7xl mx-auto grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-6">
+						{/* FORM */}
 
-					<div
-						className="
+						<div
+							className="
 							bg-white/[0.03]
 							border border-white/10
 							backdrop-blur-2xl
@@ -201,32 +202,34 @@ export default function AddressPage() {
 							xl:sticky
 							xl:top-24
 						"
-					>
-						<div className="mb-6">
-							<h2 className="text-2xl font-bold text-white">Add New Address</h2>
+						>
+							<div className="mb-6">
+								<h2 className="text-2xl font-bold text-white">
+									Add New Address
+								</h2>
 
-							<p className="text-sm text-gray-400 mt-1">
-								Enter delivery details below
-							</p>
-						</div>
+								<p className="text-sm text-gray-400 mt-1">
+									Enter delivery details below
+								</p>
+							</div>
 
-						<div className="space-y-4">
-							{/* FULL NAME */}
+							<div className="space-y-4">
+								{/* FULL NAME */}
 
-							<div className="relative">
-								<User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+								<div className="relative">
+									<User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
 
-								<input
-									type="text"
-									placeholder="Full Name"
-									value={form.fullName}
-									onChange={(e) =>
-										setForm({
-											...form,
-											fullName: e.target.value,
-										})
-									}
-									className="
+									<input
+										type="text"
+										placeholder="Full Name"
+										value={form.fullName}
+										onChange={(e) =>
+											setForm({
+												...form,
+												fullName: e.target.value,
+											})
+										}
+										className="
 										w-full
 										h-12
 										rounded-2xl
@@ -239,25 +242,25 @@ export default function AddressPage() {
 										outline-none
 										focus:border-orange-500/40
 									"
-								/>
-							</div>
+									/>
+								</div>
 
-							{/* PHONE */}
+								{/* PHONE */}
 
-							<div className="relative">
-								<Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+								<div className="relative">
+									<Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
 
-								<input
-									type="text"
-									placeholder="Phone Number"
-									value={form.phone}
-									onChange={(e) =>
-										setForm({
-											...form,
-											phone: e.target.value,
-										})
-									}
-									className="
+									<input
+										type="text"
+										placeholder="Phone Number"
+										value={form.phone}
+										onChange={(e) =>
+											setForm({
+												...form,
+												phone: e.target.value,
+											})
+										}
+										className="
 										w-full
 										h-12
 										rounded-2xl
@@ -270,24 +273,24 @@ export default function AddressPage() {
 										outline-none
 										focus:border-orange-500/40
 									"
-								/>
-							</div>
+									/>
+								</div>
 
-							{/* STREET */}
+								{/* STREET */}
 
-							<div className="relative">
-								<Home className="absolute left-4 top-4 w-4 h-4 text-gray-500" />
+								<div className="relative">
+									<Home className="absolute left-4 top-4 w-4 h-4 text-gray-500" />
 
-								<textarea
-									placeholder="Street Address"
-									value={form.street}
-									onChange={(e) =>
-										setForm({
-											...form,
-											street: e.target.value,
-										})
-									}
-									className="
+									<textarea
+										placeholder="Street Address"
+										value={form.street}
+										onChange={(e) =>
+											setForm({
+												...form,
+												street: e.target.value,
+											})
+										}
+										className="
 										w-full
 										min-h-[100px]
 										rounded-2xl
@@ -302,23 +305,23 @@ export default function AddressPage() {
 										focus:border-orange-500/40
 										resize-none
 									"
-								/>
-							</div>
+									/>
+								</div>
 
-							{/* CITY + STATE */}
+								{/* CITY + STATE */}
 
-							<div className="grid grid-cols-2 gap-4">
-								<input
-									type="text"
-									placeholder="City"
-									value={form.city}
-									onChange={(e) =>
-										setForm({
-											...form,
-											city: e.target.value,
-										})
-									}
-									className="
+								<div className="grid grid-cols-2 gap-4">
+									<input
+										type="text"
+										placeholder="City"
+										value={form.city}
+										onChange={(e) =>
+											setForm({
+												...form,
+												city: e.target.value,
+											})
+										}
+										className="
 										w-full
 										h-12
 										rounded-2xl
@@ -330,19 +333,19 @@ export default function AddressPage() {
 										outline-none
 										focus:border-orange-500/40
 									"
-								/>
+									/>
 
-								<input
-									type="text"
-									placeholder="State"
-									value={form.state}
-									onChange={(e) =>
-										setForm({
-											...form,
-											state: e.target.value,
-										})
-									}
-									className="
+									<input
+										type="text"
+										placeholder="State"
+										value={form.state}
+										onChange={(e) =>
+											setForm({
+												...form,
+												state: e.target.value,
+											})
+										}
+										className="
 										w-full
 										h-12
 										rounded-2xl
@@ -354,25 +357,25 @@ export default function AddressPage() {
 										outline-none
 										focus:border-orange-500/40
 									"
-								/>
-							</div>
+									/>
+								</div>
 
-							{/* PINCODE */}
+								{/* PINCODE */}
 
-							<div className="relative">
-								<MapPinned className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+								<div className="relative">
+									<MapPinned className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
 
-								<input
-									type="text"
-									placeholder="Pincode"
-									value={form.pincode}
-									onChange={(e) =>
-										setForm({
-											...form,
-											pincode: e.target.value,
-										})
-									}
-									className="
+									<input
+										type="text"
+										placeholder="Pincode"
+										value={form.pincode}
+										onChange={(e) =>
+											setForm({
+												...form,
+												pincode: e.target.value,
+											})
+										}
+										className="
 										w-full
 										h-12
 										rounded-2xl
@@ -385,15 +388,15 @@ export default function AddressPage() {
 										outline-none
 										focus:border-orange-500/40
 									"
-								/>
-							</div>
+									/>
+								</div>
 
-							{/* BUTTON */}
+								{/* BUTTON */}
 
-							<button
-								onClick={handleAdd}
-								disabled={adding}
-								className="
+								<button
+									onClick={handleAdd}
+									disabled={adding}
+									className="
 									w-full
 									h-13
 									rounded-2xl
@@ -406,61 +409,63 @@ export default function AddressPage() {
 									shadow-xl shadow-orange-500/20
 									flex items-center justify-center gap-2
 								"
-							>
-								{adding ? "Adding Address..." : "Add Address"}
+								>
+									{adding ? "Adding Address..." : "Add Address"}
 
-								<Plus className="w-4 h-4" />
-							</button>
+									<Plus className="w-4 h-4" />
+								</button>
+							</div>
 						</div>
-					</div>
 
-					{/* ADDRESS LIST */}
+						{/* ADDRESS LIST */}
 
-					<div
-						className="
+						<div
+							className="
 							bg-white/[0.03]
 							border border-white/10
 							backdrop-blur-2xl
 							rounded-[28px]
 							p-5
 						"
-					>
-						<div className="mb-6">
-							<h2 className="text-2xl font-bold text-white">Your Addresses</h2>
+						>
+							<div className="mb-6">
+								<h2 className="text-2xl font-bold text-white">
+									Your Addresses
+								</h2>
 
-							<p className="text-sm text-gray-400 mt-1">
-								Manage your saved delivery locations
-							</p>
-						</div>
+								<p className="text-sm text-gray-400 mt-1">
+									Manage your saved delivery locations
+								</p>
+							</div>
 
-						{/* LOADING */}
+							{/* LOADING */}
 
-						{loading ? (
-							<div className="space-y-4">
-								{[1, 2, 3].map((item) => (
-									<div
-										key={item}
-										className="
+							{loading ? (
+								<div className="space-y-4">
+									{[1, 2, 3].map((item) => (
+										<div
+											key={item}
+											className="
 											h-32
 											rounded-3xl
 											bg-white/[0.03]
 											border border-white/10
 											animate-pulse
 										"
-									/>
-								))}
-							</div>
-						) : addresses.length === 0 ? (
-							<div
-								className="
+										/>
+									))}
+								</div>
+							) : addresses.length === 0 ? (
+								<div
+									className="
 									border border-dashed border-white/10
 									rounded-3xl
 									p-10
 									text-center
 								"
-							>
-								<div
-									className="
+								>
+									<div
+										className="
 										w-16
 										h-16
 										mx-auto
@@ -470,24 +475,24 @@ export default function AddressPage() {
 										flex items-center justify-center
 										mb-5
 									"
-								>
-									<MapPin className="w-7 h-7 text-orange-400" />
+									>
+										<MapPin className="w-7 h-7 text-orange-400" />
+									</div>
+
+									<h3 className="text-2xl font-bold text-white mb-3">
+										No Addresses Yet
+									</h3>
+
+									<p className="text-gray-400 max-w-md mx-auto">
+										Add your first address to simplify checkout and delivery.
+									</p>
 								</div>
-
-								<h3 className="text-2xl font-bold text-white mb-3">
-									No Addresses Yet
-								</h3>
-
-								<p className="text-gray-400 max-w-md mx-auto">
-									Add your first address to simplify checkout and delivery.
-								</p>
-							</div>
-						) : (
-							<div className="space-y-4">
-								{addresses.map((addr) => (
-									<div
-										key={addr._id}
-										className="
+							) : (
+								<div className="space-y-4">
+									{addresses.map((addr) => (
+										<div
+											key={addr._id}
+											className="
 											relative
 											rounded-3xl
 											border border-white/10
@@ -496,12 +501,12 @@ export default function AddressPage() {
 											transition-all duration-300
 											hover:border-white/20
 										"
-									>
-										{/* DELETE */}
+										>
+											{/* DELETE */}
 
-										<button
-											onClick={() => handleDelete(addr._id)}
-											className="
+											<button
+												onClick={() => handleDelete(addr._id)}
+												className="
 												absolute
 												top-4
 												right-4
@@ -515,38 +520,39 @@ export default function AddressPage() {
 												hover:bg-red-500/20
 												transition-all
 											"
-										>
-											<Trash2 className="w-4 h-4" />
-										</button>
+											>
+												<Trash2 className="w-4 h-4" />
+											</button>
 
-										<div className="space-y-4">
-											<div>
-												<h3 className="text-xl font-bold text-white">
-													{addr.fullName}
-												</h3>
+											<div className="space-y-4">
+												<div>
+													<h3 className="text-xl font-bold text-white">
+														{addr.fullName}
+													</h3>
 
-												<p className="text-sm text-gray-500 mt-1">
-													{addr.phone}
-												</p>
-											</div>
+													<p className="text-sm text-gray-500 mt-1">
+														{addr.phone}
+													</p>
+												</div>
 
-											<div className="space-y-2 text-gray-400 leading-relaxed">
-												<p>{addr.street}</p>
+												<div className="space-y-2 text-gray-400 leading-relaxed">
+													<p>{addr.street}</p>
 
-												<p>
-													{addr.city}, {addr.state}
-												</p>
+													<p>
+														{addr.city}, {addr.state}
+													</p>
 
-												<p>{addr.pincode}</p>
+													<p>{addr.pincode}</p>
+												</div>
 											</div>
 										</div>
-									</div>
-								))}
-							</div>
-						)}
+									))}
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
-			</div>
-		</section>
+			</section>
+		</ProtectedRoute>
 	);
 }
