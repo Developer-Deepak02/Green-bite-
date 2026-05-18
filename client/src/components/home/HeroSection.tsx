@@ -1,3 +1,7 @@
+"use client";
+
+import Link from "next/link";
+
 import { ArrowRight, Clock3, Star, UtensilsCrossed } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -112,51 +116,61 @@ export default function HeroSection() {
 					{/* CTA BUTTONS */}
 
 					<div className="flex flex-wrap gap-4 pt-2">
-						<Button
-							size="lg"
-							className="
-								h-14
-								px-8
-								rounded-2xl
-								bg-orange-500
-								hover:bg-orange-600
-								text-white
-								font-semibold
-								shadow-xl shadow-orange-500/20
-								transition-all duration-300
-								hover:scale-[1.02]
-								group
-							"
-						>
-							Explore Menu
-							<ArrowRight
-								className="
-									w-5 h-5
-									ml-1
-									transition-transform duration-300
-									group-hover:translate-x-1
-								"
-							/>
-						</Button>
+						{/* EXPLORE MENU */}
 
-						<Button
-							variant="outline"
-							size="lg"
-							className="
-								h-14
-								px-8
-								rounded-2xl
-								border-white/10
-								bg-white/[0.03]
-								backdrop-blur-xl
-								text-white
-								hover:bg-white/10
-								hover:text-white
-								transition-all duration-300
-							"
-						>
-							Track Order
-						</Button>
+						<Link href="/menu">
+							<Button
+								size="lg"
+								className="
+									h-14
+									px-8
+									rounded-2xl
+									bg-orange-500
+									hover:bg-orange-600
+									text-white
+									font-semibold
+									shadow-xl shadow-orange-500/20
+									transition-all duration-300
+									hover:scale-[1.02]
+									group
+									cursor-pointer
+								"
+							>
+								Explore Menu
+								<ArrowRight
+									className="
+										w-5 h-5
+										ml-1
+										transition-transform duration-300
+										group-hover:translate-x-1
+									"
+								/>
+							</Button>
+						</Link>
+
+						{/* TRACK ORDER */}
+
+						<Link href="/orders">
+							<Button
+								variant="outline"
+								size="lg"
+								className="
+									h-14
+									px-8
+									rounded-2xl
+									border-white/10
+									bg-white/[0.03]
+									backdrop-blur-xl
+									text-white
+									hover:bg-white/10
+									hover:text-white
+									transition-all duration-300
+									cursor-pointer
+								"
+							>
+								Track Order
+							</Button>
+						</Link>
 					</div>
 
 					{/* STATS */}

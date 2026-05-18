@@ -1,12 +1,15 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+
 import { useEffect, useState } from "react";
 
 import { Clock3, Plus, Star, Flame, ArrowRight } from "lucide-react";
 
 import { api } from "@/lib/api";
 import { MenuItem } from "@/types";
+
 import { useCartStore } from "@/store/useCartStore";
 
 import { Button } from "@/components/ui/button";
@@ -15,7 +18,7 @@ export default function FeaturedDishes() {
 	const [items, setItems] = useState<MenuItem[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	const addToCart = useCartStore((state) => state.addToCart);
+	const { items: cartItems, addToCart } = useCartStore();
 
 	useEffect(() => {
 		const fetchMenu = async () => {
@@ -32,6 +35,19 @@ export default function FeaturedDishes() {
 
 		fetchMenu();
 	}, []);
+
+	const getCartItem = (id: string) => {
+		return cartItems.find((item) => item._id === id);
+	};
+
+	const handleAddToCart = (item: MenuItem) => {
+		addToCart({
+			_id: item._id,
+			name: item.name,
+			price: item.price,
+			quantity: 1,
+		});
+	};
 
 	return (
 		<section className="relative py-28 overflow-hidden">
@@ -132,26 +148,28 @@ export default function FeaturedDishes() {
 						</div>
 					</div>
 
-					<Button
-						variant="ghost"
-						className="
-							hidden lg:flex
-							items-center gap-2
-							h-12
-							px-5
-							rounded-2xl
-							text-gray-400
-							hover:text-orange-500
-							hover:bg-white/[0.03]
-							absolute
-							right-0
-							top-1/2
-							-translate-y-1/2
-						"
-					>
-						View Full Menu
-						<ArrowRight className="w-4 h-4" />
-					</Button>
+					<Link href="/menu">
+						<Button
+							variant="ghost"
+							className="
+								hidden lg:flex
+								items-center gap-2
+								h-12
+								px-5
+								rounded-2xl
+								text-gray-400
+								hover:text-orange-500
+								hover:bg-white/[0.03]
+								absolute
+								right-0
+								top-1/2
+								-translate-y-1/2
+							"
+						>
+							View Full Menu
+							<ArrowRight className="w-4 h-4" />
+						</Button>
+					</Link>
 				</div>
 
 				{/* LOADING */}
@@ -388,32 +406,50 @@ export default function FeaturedDishes() {
 											</div>
 										</div>
 
-										<Button
-											size="icon"
-											onClick={() =>
-												addToCart({
-													_id: item._id,
-													name: item.name,
-													price: item.price,
-													quantity: 1,
-												})
-											}
-											className="
-												w-14
-												h-14
-												rounded-2xl
-												bg-orange-500
-												hover:bg-orange-600
-												text-white
-												shadow-xl
-												shadow-orange-500/25
-												transition-all
-												duration-300
-												group-hover:scale-105
-											"
-										>
-											<Plus className="w-6 h-6" />
-										</Button>
+										{/* CART BUTTON */}
+
+										{getCartItem(item._id) ? (
+											<Link href="/cart">
+												<Button
+													className="
+														h-14
+														px-6
+														rounded-2xl
+														bg-green-500
+														hover:bg-green-600
+														text-white
+														font-semibold
+														shadow-xl
+														shadow-green-500/20
+														transition-all
+														duration-300
+													"
+												>
+													Go To Cart
+												</Button>
+											</Link>
+										) : (
+											<Button
+												size="icon"
+												disabled={item.isAvailable === false}
+												onClick={() => handleAddToCart(item)}
+												className="
+													w-14
+													h-14
+													rounded-2xl
+													bg-orange-500
+													hover:bg-orange-600
+													text-white
+													shadow-xl
+													shadow-orange-500/25
+													transition-all
+													duration-300
+													group-hover:scale-105
+												"
+											>
+												<Plus className="w-6 h-6" />
+											</Button>
+										)}
 									</div>
 								</div>
 

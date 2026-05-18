@@ -1,10 +1,15 @@
 "use client";
 
+import Link from "next/link";
+
 import Image from "next/image";
+
 import { ChevronRight, ChevronLeft } from "lucide-react";
+
 import { useEffect, useRef, useState } from "react";
 
 import { api } from "@/lib/api";
+
 import { Category } from "@/types";
 
 import { Button } from "@/components/ui/button";
@@ -33,6 +38,7 @@ export default function CategorySection() {
 	const sliderRef = useRef<HTMLDivElement>(null);
 
 	const [categories, setCategories] = useState<Category[]>([]);
+
 	const [loading, setLoading] = useState(true);
 
 	const [activeIndex, setActiveIndex] = useState(0);
@@ -57,6 +63,7 @@ export default function CategorySection() {
 		if (sliderRef.current) {
 			sliderRef.current.scrollBy({
 				left: -420,
+
 				behavior: "smooth",
 			});
 
@@ -68,6 +75,7 @@ export default function CategorySection() {
 		if (sliderRef.current) {
 			sliderRef.current.scrollBy({
 				left: 420,
+
 				behavior: "smooth",
 			});
 
@@ -81,9 +89,13 @@ export default function CategorySection() {
 		const lower = name.toLowerCase();
 
 		if (lower.includes("pizza")) return categoryImages.pizza;
+
 		if (lower.includes("burger")) return categoryImages.burger;
+
 		if (lower.includes("pasta")) return categoryImages.pasta;
+
 		if (lower.includes("dessert")) return categoryImages.dessert;
+
 		if (lower.includes("drink")) return categoryImages.drink;
 
 		return categoryImages.default;
@@ -191,26 +203,35 @@ export default function CategorySection() {
 						</div>
 					</div>
 
-					<Button
-						variant="ghost"
+					{/* VIEW ALL */}
+
+					<Link
+						href="/menu"
 						className="
-							hidden lg:flex
-							items-center gap-2
-							h-12
-							px-5
-							rounded-2xl
-							text-gray-400
-							hover:text-orange-500
-							hover:bg-white/[0.03]
+							hidden
+							lg:block
 							absolute
 							right-0
 							top-1/2
 							-translate-y-1/2
 						"
 					>
-						View All
-						<ChevronRight className="w-4 h-4" />
-					</Button>
+						<Button
+							variant="ghost"
+							className="
+								items-center gap-2
+								h-12
+								px-5
+								rounded-2xl
+								text-gray-400
+								hover:text-orange-500
+								hover:bg-white/[0.03]
+							"
+						>
+							View All
+							<ChevronRight className="w-4 h-4" />
+						</Button>
+					</Link>
 				</div>
 
 				{/* LOADING */}
@@ -221,14 +242,14 @@ export default function CategorySection() {
 							<div
 								key={item}
 								className="
-									min-w-[280px]
-									md:min-w-[340px]
-									h-[420px]
-									rounded-[36px]
-									bg-white/[0.03]
-									border border-white/10
-									animate-pulse
-								"
+										min-w-[280px]
+										md:min-w-[340px]
+										h-[420px]
+										rounded-[36px]
+										bg-white/[0.03]
+										border border-white/10
+										animate-pulse
+									"
 							/>
 						))}
 					</div>
@@ -261,35 +282,37 @@ export default function CategorySection() {
 							"
 						>
 							{categories.map((category) => (
-								<div
+								<Link
 									key={category._id}
+									href={`/menu?category=${encodeURIComponent(category.name)}`}
 									className="
-										group
-										relative
-										min-w-[280px]
-										md:min-w-[340px]
-										h-[420px]
-										rounded-[36px]
-										overflow-hidden
-										border border-white/10
-										bg-white/[0.03]
-										backdrop-blur-2xl
-										cursor-pointer
-										transition-all duration-500
-										hover:-translate-y-3
-										hover:border-orange-500/40
+											group
+											relative
+											min-w-[280px]
+											md:min-w-[340px]
+											h-[420px]
+											rounded-[36px]
+											overflow-hidden
+											border border-white/10
+											bg-white/[0.03]
+											backdrop-blur-2xl
+											cursor-pointer
+											transition-all duration-500
+											hover:-translate-y-3
+											hover:border-orange-500/40
+											block
 
-										before:absolute
-										before:inset-0
-										before:rounded-[36px]
-										before:bg-orange-500/0
-										before:blur-3xl
-										before:transition-all
-										before:duration-500
-										group-hover:before:bg-orange-500/10
+											before:absolute
+											before:inset-0
+											before:rounded-[36px]
+											before:bg-orange-500/0
+											before:blur-3xl
+											before:transition-all
+											before:duration-500
+											group-hover:before:bg-orange-500/10
 
-										hover:shadow-[0_0_80px_rgba(249,115,22,0.18)]
-									"
+											hover:shadow-[0_0_80px_rgba(249,115,22,0.18)]
+										"
 								>
 									{/* IMAGE */}
 
@@ -299,21 +322,21 @@ export default function CategorySection() {
 											alt={category.name}
 											fill
 											className="
-												object-cover
-												group-hover:scale-110
-												transition-transform
-												duration-700
-											"
+													object-cover
+													group-hover:scale-110
+													transition-transform
+													duration-700
+												"
 										/>
 
 										<div
 											className="
-												absolute inset-0
-												bg-gradient-to-t
-												from-black/95
-												via-black/35
-												to-black/10
-											"
+													absolute inset-0
+													bg-gradient-to-t
+													from-black/95
+													via-black/35
+													to-black/10
+												"
 										/>
 									</div>
 
@@ -321,28 +344,28 @@ export default function CategorySection() {
 
 									<div
 										className="
-											relative
-											h-full
-											p-8
-											flex
-											flex-col
-											justify-between
-										"
+												relative
+												h-full
+												p-8
+												flex
+												flex-col
+												justify-between
+											"
 									>
 										<div>
 											<div
 												className="
-													inline-flex
-													items-center
-													bg-orange-500/15
-													border border-orange-500/20
-													backdrop-blur-xl
-													text-orange-400
-													text-xs
-													font-medium
-													px-3 py-1.5
-													rounded-full
-												"
+														inline-flex
+														items-center
+														bg-orange-500/15
+														border border-orange-500/20
+														backdrop-blur-xl
+														text-orange-400
+														text-xs
+														font-medium
+														px-3 py-1.5
+														rounded-full
+													"
 											>
 												Popular Choice
 											</div>
@@ -351,45 +374,49 @@ export default function CategorySection() {
 										<div className="space-y-4">
 											<h3
 												className="
-													text-4xl
-													font-black
-													text-white
-													tracking-tight
-												"
+														text-4xl
+														font-black
+														text-white
+														tracking-tight
+													"
 											>
 												{category.name}
 											</h3>
 
 											<p
 												className="
-													text-gray-300
-													text-base
-													leading-relaxed
-													max-w-[260px]
-												"
+														text-gray-300
+														text-base
+														leading-relaxed
+														max-w-[260px]
+													"
 											>
 												Freshly crafted dishes prepared with bold flavors and
 												premium ingredients.
 											</p>
 
-											<Button
+											<div
 												className="
-													mt-2
-													h-12
-													px-5
-													rounded-2xl
-													bg-orange-500
-													hover:bg-orange-600
-													text-white
-													font-semibold
-													shadow-lg shadow-orange-500/20
-												"
+														inline-flex
+														items-center
+														gap-2
+														h-12
+														px-5
+														rounded-2xl
+														bg-orange-500
+														text-white
+														font-semibold
+														shadow-lg shadow-orange-500/20
+														group-hover:bg-orange-600
+														transition-all duration-300
+													"
 											>
 												Explore Menu
-											</Button>
+												<ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+											</div>
 										</div>
 									</div>
-								</div>
+								</Link>
 							))}
 						</div>
 

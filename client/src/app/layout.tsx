@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins, Inter, Geist } from "next/font/google";
+import Script from "next/script";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -43,8 +44,15 @@ export default function RootLayout({
 					min-h-screen
 				`}
 			>
+				{/* RAZORPAY SDK */}
+				<Script
+					src="https://checkout.razorpay.com/v1/checkout.js"
+					strategy="beforeInteractive"
+				/>
+
 				{children}
 			</body>
 		</html>
 	);
 }
+	

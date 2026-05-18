@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { Category } from "@/types";
+
 import { api } from "@/lib/api";
 
 const allTab = {
@@ -11,12 +12,17 @@ const allTab = {
 };
 
 interface CategoryTabsProps {
+	activeCategory?: string;
+
 	onCategoryChange?: (category: string) => void;
 }
 
-export default function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
+export default function CategoryTabs({
+	activeCategory = "All",
+
+	onCategoryChange,
+}: CategoryTabsProps) {
 	const [categories, setCategories] = useState<Category[]>([]);
-	const [active, setActive] = useState("all");
 
 	useEffect(() => {
 		const fetchCategories = async () => {
@@ -32,9 +38,7 @@ export default function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
 		fetchCategories();
 	}, []);
 
-	const handleCategoryChange = (categoryId: string, categoryName: string) => {
-		setActive(categoryId);
-
+	const handleCategoryChange = (categoryName: string) => {
 		if (onCategoryChange) {
 			onCategoryChange(categoryName);
 		}
@@ -45,13 +49,11 @@ export default function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
 			<div
 				className="
 					backdrop-blur-2xl
-					bg-[#081028]/85
+					bg-[#081028]/80
 					border-y border-white/5
 					py-5
 				"
 			>
-				{/* CATEGORY TABS */}
-
 				<div
 					className="
 						flex
@@ -66,14 +68,13 @@ export default function CategoryTabs({ onCategoryChange }: CategoryTabsProps) {
 					"
 				>
 					{[allTab, ...categories].map((category) => {
-						const activeTab = active === category._id;
+						const activeTab =
+							activeCategory.toLowerCase() === category.name.toLowerCase();
 
 						return (
 							<button
 								key={category._id}
-								onClick={() =>
-									handleCategoryChange(category._id, category.name)
-								}
+								onClick={() => handleCategoryChange(category.name)}
 								className={`
 									flex-shrink-0
 									h-12
