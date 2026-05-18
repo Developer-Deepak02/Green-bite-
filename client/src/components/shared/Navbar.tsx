@@ -1,16 +1,52 @@
 "use client";
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ShoppingCart, User, Menu, Search, HandPlatter, X } from "lucide-react";
+
+import {
+	ShoppingCart,
+	User,
+	Menu,
+	Search,
+	HandPlatter,
+	X,
+	Home,
+	UtensilsCrossed,
+	LogOut,
+	Ticket,
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+
 import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import SearchModal from "@/components/search/SearchModal";
+
 export default function Navbar() {
 	const pathname = usePathname();
+
 	const [mobileOpen, setMobileOpen] = useState(false);
+
 	const [scrolled, setScrolled] = useState(false);
+	const [searchOpen, setSearchOpen] = useState(false);
+
 	const items = useCartStore((state) => state.items);
+
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+
+	const { user, logout } = useAuthStore();
+
+	const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
+
+	const handleLogout = () => {
+		logout();
+
+		setMobileOpen(false);
+
+		window.location.href = "/";
+	};
+
 	const navLinks = [
 		{
 			name: "Home",
@@ -38,7 +74,9 @@ export default function Navbar() {
 		const handleScroll = () => {
 			setScrolled(window.scrollY > 10);
 		};
+
 		window.addEventListener("scroll", handleScroll);
+
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
@@ -139,12 +177,12 @@ export default function Navbar() {
 								-mt-1
 							"
 						>
-							Fresh • Fast • Delivered
+							FRESH • FAST • DELIVERED
 						</p>
 					</div>
 				</Link>
 
-				{/* CENTER NAV */}
+				{/* DESKTOP NAV */}
 
 				<nav
 					className="
@@ -197,18 +235,19 @@ export default function Navbar() {
 					<Button
 						size="icon"
 						variant="outline"
+						onClick={() => setSearchOpen(true)}
 						className="
-							hidden sm:flex
-							w-11 h-11
-							rounded-2xl
-							border-white/10
-							bg-white/[0.03]
-							backdrop-blur-xl
-							text-gray-300
-							hover:bg-white/10
-							hover:text-white
-							hover:border-white/20
-						"
+		hidden sm:flex
+		w-11 h-11
+		rounded-2xl
+		border-white/10
+		bg-white/[0.03]
+		backdrop-blur-xl
+		text-gray-300
+		hover:bg-white/10
+		hover:text-white
+		hover:border-white/20
+	"
 					>
 						<Search className="w-5 h-5" />
 					</Button>
@@ -259,26 +298,84 @@ export default function Navbar() {
 						</Button>
 					</Link>
 
-					{/* SIGN IN */}
+					{/* DESKTOP PROFILE */}
 
-					<Link href="/login">
-						<Button
-							className="
-								hidden sm:flex
-								h-11
-								px-5
-								rounded-2xl
-								bg-orange-500
-								hover:bg-orange-600
-								text-white
-								font-semibold
-								shadow-lg shadow-orange-500/20
-							"
-						>
-							<User className="w-4 h-4 mr-2" />
-							Sign In
-						</Button>
-					</Link>
+					{user ? (
+						<Link href="/profile" className="hidden sm:block">
+							<button
+								className="
+									w-11 h-11
+									rounded-2xl
+									bg-orange-500
+									text-white
+									font-bold
+									text-sm
+									shadow-lg shadow-orange-500/20
+									hover:scale-105
+									transition-all duration-300
+									flex items-center justify-center
+								"
+							>
+								{userInitial}
+							</button>
+						</Link>
+					) : (
+						<Link href="/login" className="hidden sm:block">
+							<Button
+								className="
+									h-11
+									px-5
+									rounded-2xl
+									bg-orange-500
+									hover:bg-orange-600
+									text-white
+									font-semibold
+									shadow-lg shadow-orange-500/20
+								"
+							>
+								<User className="w-4 h-4 mr-2" />
+								Sign In
+							</Button>
+						</Link>
+					)}
+
+					{/* MOBILE PROFILE */}
+
+					{user ? (
+						<Link href="/profile" className="sm:hidden">
+							<button
+								className="
+									w-10 h-10
+									rounded-2xl
+									bg-orange-500
+									text-white
+									font-bold
+									text-sm
+									flex items-center justify-center
+									shadow-lg shadow-orange-500/20
+								"
+							>
+								{userInitial}
+							</button>
+						</Link>
+					) : (
+						<Link href="/login" className="sm:hidden">
+							<Button
+								className="
+									h-10
+									px-4
+									rounded-2xl
+									bg-orange-500
+									hover:bg-orange-600
+									text-white
+									font-semibold
+									text-sm
+								"
+							>
+								Sign In
+							</Button>
+						</Link>
+					)}
 
 					{/* MOBILE MENU BUTTON */}
 
@@ -311,20 +408,45 @@ export default function Navbar() {
 				<div
 					className="
 						lg:hidden
-						border-t border-white/10
+						absolute
+						top-20
+						left-4
+						right-4
+						z-50
+						rounded-3xl
+						border border-white/10
 						bg-[#0B1220]/95
 						backdrop-blur-2xl
+						shadow-2xl shadow-black/40
+						overflow-hidden
 					"
 				>
-					<div
-						className="
-							px-4
-							py-5
-							space-y-2
-						"
-					>
+					<div className="p-2 space-y-1">
 						{navLinks.map((link) => {
 							const active = pathname === link.href;
+
+							let Icon;
+
+							switch (link.name) {
+								case "Home":
+									Icon = Home;
+									break;
+
+								case "Menu":
+									Icon = UtensilsCrossed;
+									break;
+
+								case "Offers":
+									Icon = Ticket;
+									break;
+
+								case "Orders":
+									Icon = ShoppingCart;
+									break;
+
+								default:
+									Icon = User;
+							}
 
 							return (
 								<Link
@@ -332,51 +454,52 @@ export default function Navbar() {
 									href={link.href}
 									onClick={() => setMobileOpen(false)}
 									className={`
-										flex items-center
+										flex items-center gap-3
 										h-12
 										px-4
 										rounded-2xl
-										text-sm
-										font-medium
+										text-sm font-medium
 										transition-all duration-300
 										${
 											active
-												? "bg-orange-500/10 text-orange-500 border border-orange-500/20"
-												: "text-gray-300 hover:bg-white/[0.03] hover:text-white"
+												? "bg-orange-500/10 text-orange-400 border border-orange-500/20"
+												: "text-gray-300 hover:bg-white/[0.04] hover:text-white"
 										}
 									`}
 								>
-									{link.name}
+									<Icon className="w-4 h-4" />
+
+									<span>{link.name}</span>
 								</Link>
 							);
 						})}
+					</div>
 
-						<Link
-							href="/login"
-							onClick={() => setMobileOpen(false)}
-							className="
-								block
-								mt-4
-							"
-						>
-							<Button
+					{/* LOGOUT */}
+
+					{user && (
+						<div className="p-3 border-t border-white/10">
+							<button
+								onClick={handleLogout}
 								className="
 									w-full
-									h-12
+									h-11
 									rounded-2xl
-									bg-orange-500
-									hover:bg-orange-600
-									text-white
+									bg-red-500/10
+									border border-red-500/20
+									text-red-400
 									font-semibold
+									flex items-center justify-center gap-2
 								"
 							>
-								<User className="w-4 h-4 mr-2" />
-								Sign In
-							</Button>
-						</Link>
-					</div>
+								<LogOut className="w-4 h-4" />
+								Logout
+							</button>
+						</div>
+					)}
 				</div>
 			)}
+			<SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 		</header>
 	);
 }

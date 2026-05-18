@@ -1,12 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { Home, UtensilsCrossed, ShoppingCart, User } from "lucide-react";
+
+import {
+	Home,
+	UtensilsCrossed,
+	ShoppingCart,
+	User,
+	Package,
+} from "lucide-react";
 
 import { usePathname } from "next/navigation";
 
+import { useCartStore } from "@/store/useCartStore";
+import { useAuthStore } from "@/store/useAuthStore";
+
 export default function MobileBottomNav() {
 	const pathname = usePathname();
+
+	const items = useCartStore((state) => state.items);
+
+	const { user } = useAuthStore();
+
+	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
 	const navItems = [
 		{
@@ -23,11 +39,12 @@ export default function MobileBottomNav() {
 			label: "Cart",
 			href: "/cart",
 			icon: ShoppingCart,
+			badge: totalItems,
 		},
 		{
-			label: "Profile",
-			href: "/login",
-			icon: User,
+			label: user ? "Orders" : "Profile",
+			href: user ? "/orders" : "/login",
+			icon: user ? Package : User,
 		},
 	];
 
@@ -52,13 +69,16 @@ export default function MobileBottomNav() {
 				{navItems.map((item) => {
 					const Icon = item.icon;
 
-					const active = pathname === item.href;
+					const active =
+						pathname === item.href ||
+						(item.href !== "/" && pathname.startsWith(item.href));
 
 					return (
 						<Link
 							key={item.href}
 							href={item.href}
 							className={`
+								relative
 								flex flex-col items-center justify-center
 								gap-1
 								text-xs font-medium
@@ -67,9 +87,11 @@ export default function MobileBottomNav() {
 								${active ? "text-orange-500" : "text-gray-400 hover:text-white"}
 							`}
 						>
-							{/* Icon Wrapper */}
+							{/* ICON WRAPPER */}
+
 							<div
 								className={`
+									relative
 									flex items-center justify-center
 									transition-all duration-300
 									${
@@ -85,9 +107,34 @@ export default function MobileBottomNav() {
 										transition-all duration-300
 									"
 								/>
+
+								{/* CART BADGE */}
+
+								{item.badge && item.badge > 0 && (
+									<div
+										className="
+											absolute
+											- top-2
+											- right-2
+											min-w-[18px]
+											h-[18px]
+											rounded-full
+											bg-orange-500
+											text-white
+											text-[10px]
+											font-bold
+											flex items-center justify-center
+											px-1
+											shadow-lg shadow-orange-500/30
+										"
+									>
+										{item.badge}
+									</div>
+								)}
 							</div>
 
-							{/* Label */}
+							{/* LABEL */}
+
 							<span
 								className="
 									text-[11px]
@@ -103,4 +150,3 @@ export default function MobileBottomNav() {
 		</div>
 	);
 }
-	
