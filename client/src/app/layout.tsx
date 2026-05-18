@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Inter, Geist } from "next/font/google";
 
 import "./globals.css";
-
 import { cn } from "@/lib/utils";
-
-import Navbar from "@/components/shared/Navbar";
-import Footer from "@/components/shared/Footer";
 
 const geist = Geist({
 	subsets: ["latin"],
@@ -42,19 +38,12 @@ export default function RootLayout({
 					${poppins.variable}
 					${inter.variable}
 					antialiased
-					bg-[#0F172A]
+					bg-[#081028]
 					text-white
 					min-h-screen
-					overflow-x-hidden
 				`}
 			>
-				<div className="relative min-h-screen flex flex-col">
-					<Navbar />
-
-					<main className="flex-1">{children}</main>
-
-					<Footer />
-				</div>
+				{children}
 			</body>
 		</html>
 	);
