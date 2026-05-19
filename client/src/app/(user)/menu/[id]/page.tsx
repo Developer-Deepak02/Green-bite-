@@ -1,14 +1,11 @@
 "use client";
-
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
-
+import ReviewSection from "@/components/reviews/ReviewSection";
 import { useCartStore } from "@/store/useCartStore";
-
 import { Star, Clock3, Minus, Plus, ShoppingCart, Check } from "lucide-react";
 
 interface MenuItem {
@@ -357,7 +354,7 @@ export default function ProductPage() {
 					</div>
 				</div>
 			</div>
-
+			<ReviewSection menuItemId={item._id} />
 			<Footer />
 		</div>
 	);
