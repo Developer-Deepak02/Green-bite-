@@ -8,39 +8,25 @@ import { useAuthStore } from "@/store/useAuthStore";
 
 interface Review {
 	_id: string;
-
 	rating: number;
-
 	comment: string;
-
 	createdAt: string;
-
 	user: {
 		name: string;
 	};
 }
-
 interface Props {
 	menuItemId: string;
 }
-
 export default function ReviewSection({ menuItemId }: Props) {
 	const { user } = useAuthStore();
-
 	const [reviews, setReviews] = useState<Review[]>([]);
-
 	const [loading, setLoading] = useState(true);
-
 	const [rating, setRating] = useState(5);
-
 	const [comment, setComment] = useState("");
-
 	const [submitting, setSubmitting] = useState(false);
-
 	const [averageRating, setAverageRating] = useState(0);
-
 	const [totalReviews, setTotalReviews] = useState(0);
-
 	const fetchReviews = async () => {
 		try {
 			const res = await fetch(
@@ -48,11 +34,8 @@ export default function ReviewSection({ menuItemId }: Props) {
 			);
 
 			const data = await res.json();
-
 			setReviews(data.reviews || []);
-
 			setAverageRating(data.averageRating || 0);
-
 			setTotalReviews(data.totalReviews || 0);
 		} catch (error) {
 			console.error(error);
@@ -68,41 +51,29 @@ export default function ReviewSection({ menuItemId }: Props) {
 	const handleSubmit = async () => {
 		try {
 			setSubmitting(true);
-
 			const token = localStorage.getItem("token");
-
 			const res = await fetch("http://localhost:5000/api/reviews", {
 				method: "POST",
-
 				headers: {
 					"Content-Type": "application/json",
-
 					Authorization: `Bearer ${token}`,
 				},
-
 				body: JSON.stringify({
 					menuItem: menuItemId,
 					rating,
 					comment,
 				}),
 			});
-
 			const data = await res.json();
-
 			if (!res.ok) {
 				alert(data.message);
-
 				return;
 			}
-
 			setComment("");
-
 			setRating(5);
-
 			await fetchReviews();
 		} catch (error) {
 			console.error(error);
-
 			alert("Failed to submit review");
 		} finally {
 			setSubmitting(false);
@@ -113,16 +84,13 @@ export default function ReviewSection({ menuItemId }: Props) {
 		<section className="mt-24">
 			<div className="max-w-5xl mx-auto">
 				{/* HEADER */}
-
 				<div className="flex items-center justify-between flex-wrap gap-6 mb-10">
 					<div>
 						<h2 className="text-3xl font-bold text-white">Customer Reviews</h2>
-
 						<p className="text-gray-400 mt-2">
 							Real feedback from BiteRush customers
 						</p>
 					</div>
-
 					<div
 						className="
 							px-6 py-4
@@ -135,23 +103,18 @@ export default function ReviewSection({ menuItemId }: Props) {
 						<div className="flex items-center gap-3">
 							<div className="flex items-center gap-1">
 								<Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-
-								<span className="text-2xl font-bold text-white">
+					<span className="text-2xl font-bold text-white">
 									{averageRating.toFixed(1)}
 								</span>
 							</div>
-
 							<div className="w-px h-8 bg-white/10" />
-
 							<div className="text-sm text-gray-400">
 								{totalReviews} Reviews
 							</div>
 						</div>
 					</div>
 				</div>
-
 				{/* REVIEW FORM */}
-
 				{user && (
 					<div
 						className="

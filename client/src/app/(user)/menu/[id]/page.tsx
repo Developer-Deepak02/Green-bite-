@@ -7,6 +7,7 @@ import Footer from "@/components/shared/Footer";
 import ReviewSection from "@/components/reviews/ReviewSection";
 import { useCartStore } from "@/store/useCartStore";
 import { Star, Clock3, Minus, Plus, ShoppingCart, Check } from "lucide-react";
+import RelatedProducts from "@/components/menu/RelatedProducts";
 
 interface MenuItem {
 	_id: string;
@@ -18,6 +19,7 @@ interface MenuItem {
 	ratingAverage: number;
 	ratingCount: number;
 	category?: {
+		_id: string;
 		name: string;
 	};
 	isAvailable: boolean;
@@ -354,6 +356,10 @@ export default function ProductPage() {
 					</div>
 				</div>
 			</div>
+			<RelatedProducts
+				categoryId={item.category?._id}
+				currentItemId={item._id}
+			/>
 			<ReviewSection menuItemId={item._id} />
 			<Footer />
 		</div>

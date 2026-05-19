@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 
-import { Clock3, Plus, Star, Flame } from "lucide-react";
+import { useEffect } from "react";
+
+import { Clock3, Plus, Star, Flame, Heart } from "lucide-react";
 
 import { MenuItem } from "@/types";
+
 import { useCartStore } from "@/store/useCartStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
 
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +20,13 @@ interface MenuGridProps {
 
 export default function MenuGrid({ items, loading }: MenuGridProps) {
 	const addToCart = useCartStore((state) => state.addToCart);
+
+	const { addToWishlist, removeFromWishlist, isWishlisted, fetchWishlist } =
+		useWishlistStore();
+
+	useEffect(() => {
+		fetchWishlist();
+	}, [fetchWishlist]);
 
 	return (
 		<section className="relative pb-20">
@@ -169,6 +180,43 @@ export default function MenuGrid({ items, loading }: MenuGridProps) {
 											<Flame className="w-3 h-3" />
 											Popular
 										</div>
+
+										{/* WISHLIST */}
+
+										<button
+											onClick={(e) => {
+												e.preventDefault();
+
+												e.stopPropagation();
+
+												if (isWishlisted(item._id)) {
+													removeFromWishlist(item._id);
+												} else {
+													addToWishlist(item._id);
+												}
+											}}
+											className="
+												absolute
+												bottom-4
+												right-4
+												w-11
+												h-11
+												rounded-2xl
+												bg-black/50
+												backdrop-blur-xl
+												border border-white/10
+												flex items-center justify-center
+												transition-all duration-300
+												hover:scale-105
+											"
+										>
+											<Heart
+												className={`
+													w-5 h-5 transition-all
+													${isWishlisted(item._id) ? "fill-red-500 text-red-500" : "text-white"}
+												`}
+											/>
+										</button>
 									</div>
 
 									{/* CONTENT */}

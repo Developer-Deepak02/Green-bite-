@@ -15,12 +15,15 @@ import {
 	UtensilsCrossed,
 	LogOut,
 	Ticket,
+	Heart,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
+
 import SearchModal from "@/components/search/SearchModal";
 
 export default function Navbar() {
@@ -29,9 +32,12 @@ export default function Navbar() {
 	const [mobileOpen, setMobileOpen] = useState(false);
 
 	const [scrolled, setScrolled] = useState(false);
+
 	const [searchOpen, setSearchOpen] = useState(false);
 
 	const items = useCartStore((state) => state.items);
+
+	const wishlistItems = useWishlistStore((state) => state.items);
 
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
@@ -76,6 +82,10 @@ export default function Navbar() {
 		};
 
 		window.addEventListener("scroll", handleScroll);
+
+		const fetchWishlist = useWishlistStore.getState().fetchWishlist;
+
+		fetchWishlist();
 
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
@@ -237,20 +247,65 @@ export default function Navbar() {
 						variant="outline"
 						onClick={() => setSearchOpen(true)}
 						className="
-		hidden sm:flex
-		w-11 h-11
-		rounded-2xl
-		border-white/10
-		bg-white/[0.03]
-		backdrop-blur-xl
-		text-gray-300
-		hover:bg-white/10
-		hover:text-white
-		hover:border-white/20
-	"
+							hidden sm:flex
+							w-11 h-11
+							rounded-2xl
+							border-white/10
+							bg-white/[0.03]
+							backdrop-blur-xl
+							text-gray-300
+							hover:bg-white/10
+							hover:text-white
+							hover:border-white/20
+						"
 					>
 						<Search className="w-5 h-5" />
 					</Button>
+
+					{/* WISHLIST */}
+
+					<Link href="/wishlist">
+						<Button
+							size="icon"
+							variant="outline"
+							className="
+								hidden sm:flex
+								relative
+								w-11 h-11
+								rounded-2xl
+								border-white/10
+								bg-white/[0.03]
+								backdrop-blur-xl
+								text-gray-300
+								hover:bg-white/10
+								hover:text-white
+								hover:border-white/20
+							"
+						>
+							<Heart className="w-5 h-5" />
+
+							{wishlistItems.length > 0 && (
+								<div
+									className="
+										absolute
+										-top-1
+										-right-1
+										min-w-[20px]
+										h-5
+										rounded-full
+										bg-red-500
+										text-white
+										text-[10px]
+										font-bold
+										flex items-center justify-center
+										px-1
+									"
+								>
+									{wishlistItems.length}
+								</div>
+							)}
+						</Button>
+					</Link>
 
 					{/* CART */}
 
@@ -473,6 +528,47 @@ export default function Navbar() {
 								</Link>
 							);
 						})}
+
+						{/* WISHLIST */}
+
+						<Link
+							href="/wishlist"
+							onClick={() => setMobileOpen(false)}
+							className="
+								flex items-center gap-3
+								h-12
+								px-4
+								rounded-2xl
+								text-sm font-medium
+								text-gray-300
+								hover:bg-white/[0.04]
+								hover:text-white
+								transition-all duration-300
+							"
+						>
+							<Heart className="w-4 h-4" />
+
+							<span>Wishlist</span>
+
+							{wishlistItems.length > 0 && (
+								<div
+									className="
+										ml-auto
+										min-w-[22px]
+										h-5
+										rounded-full
+										bg-red-500
+										text-white
+										text-[10px]
+										font-bold
+										flex items-center justify-center
+										px-1
+									"
+								>
+									{wishlistItems.length}
+								</div>
+							)}
+						</Link>
 					</div>
 
 					{/* LOGOUT */}
@@ -499,6 +595,7 @@ export default function Navbar() {
 					)}
 				</div>
 			)}
+
 			<SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 		</header>
 	);
