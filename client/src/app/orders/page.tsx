@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import Navbar from "@/components/shared/Navbar";
+import Footer from "@/components/shared/Footer";
+
 import {
-	Clock3,
 	MapPin,
 	PackageCheck,
 	ChefHat,
 	Bike,
 	CheckCircle2,
-	RefreshCcw,
+	Clock3,
+	CreditCard,
+	Wallet,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 
 interface Order {
 	_id: string;
@@ -27,6 +29,10 @@ interface Order {
 
 	status: string;
 
+	paymentMethod: string;
+
+	paymentStatus: string;
+
 	address?: {
 		street: string;
 		city: string;
@@ -37,7 +43,7 @@ interface Order {
 	createdAt: string;
 }
 
-const statusSteps = ["confirmed", "preparing", "out for delivery", "delivered"];
+const steps = ["confirmed", "preparing", "out_for_delivery", "delivered"];
 
 export default function OrdersPage() {
 	const [orders, setOrders] = useState<Order[]>([]);
@@ -57,16 +63,15 @@ export default function OrdersPage() {
 
 				const data = await res.json();
 
-				if (Array.isArray(data)) {
-					setOrders(data);
-				} else if (Array.isArray(data.orders)) {
+				if (Array.isArray(data.orders)) {
 					setOrders(data.orders);
+				} else if (Array.isArray(data)) {
+					setOrders(data);
 				} else {
 					setOrders([]);
 				}
 			} catch (error) {
 				console.error(error);
-
 				setOrders([]);
 			} finally {
 				setLoading(false);
@@ -77,41 +82,41 @@ export default function OrdersPage() {
 	}, []);
 
 	const getCurrentStep = (status: string) => {
-		const lower = status.toLowerCase();
-
-		const index = statusSteps.findIndex((step) => lower.includes(step));
-
-		return index === -1 ? 0 : index;
+		return steps.findIndex((step) => status.toLowerCase().includes(step));
 	};
 
-	const getStatusColor = (status: string) => {
+	const getStatusStyle = (status: string) => {
 		const lower = status.toLowerCase();
 
 		if (lower.includes("delivered")) {
-			return "bg-green-500/15 text-green-400 border-green-500/20";
+			return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
 		}
 
 		if (lower.includes("preparing")) {
-			return "bg-orange-500/15 text-orange-400 border-orange-500/20";
+			return "bg-orange-500/10 text-orange-400 border-orange-500/20";
 		}
 
-		if (lower.includes("out")) {
-			return "bg-blue-500/15 text-blue-400 border-blue-500/20";
+		if (lower.includes("out_for_delivery")) {
+			return "bg-sky-500/10 text-sky-400 border-sky-500/20";
 		}
 
-		return "bg-yellow-500/15 text-yellow-400 border-yellow-500/20";
+		if (lower.includes("cancelled")) {
+			return "bg-red-500/10 text-red-400 border-red-500/20";
+		}
+
+		return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
 	};
 
 	if (loading) {
 		return (
-			<div className="min-h-screen px-4 md:px-8 xl:px-12 py-10">
-				<div className="space-y-6">
-					{[1, 2, 3].map((item) => (
+			<div className="min-h-screen px-4 py-10">
+				<div className="max-w-5xl mx-auto space-y-4">
+					{[1, 2, 3].map((i) => (
 						<div
-							key={item}
+							key={i}
 							className="
-								h-[320px]
-								rounded-[32px]
+								h-44
+								rounded-3xl
 								bg-white/[0.03]
 								border border-white/10
 								animate-pulse
@@ -125,252 +130,223 @@ export default function OrdersPage() {
 
 	return (
 		<ProtectedRoute>
-			<section className="relative overflow-hidden min-h-screen">
-				{/* BACKGROUND GLOW */}
+			<Navbar />
+			<section className="min-h-screen px-4 md:px-6 py-8">
+				<div className="max-w-5xl mx-auto">
+					{/* HEADER */}
 
-			<div
-				className="
-					absolute
-					top-0
-					left-1/2
-					-translate-x-1/2
-					w-[900px]
-					h-[500px]
-					bg-orange-500/10
-					blur-[180px]
-					rounded-full
-					pointer-events-none
-				"
-			/>
-
-			<div className="relative z-10 px-4 md:px-8 xl:px-12 py-10">
-				{/* HEADER */}
-
-				<div className="max-w-4xl mb-14">
-					<div
-						className="
-							inline-flex
-							items-center
-							bg-orange-500/10
-							border border-orange-500/20
-							text-orange-400
-							px-4 py-2
-							rounded-full
-							text-sm
-							font-medium
-							mb-6
-						"
-					>
-						Order Tracking
-					</div>
-
-					<h1
-						className="
-							text-5xl
-							md:text-6xl
-							font-black
-							leading-none
-							tracking-tight
-						"
-					>
-						Your
-						<span className="text-orange-500"> Orders</span>
-					</h1>
-
-					<p
-						className="
-							mt-5
-							text-lg
-							text-gray-400
-							max-w-2xl
-							leading-relaxed
-						"
-					>
-						Track your recent food orders, delivery progress, and reorder your
-						favorite meals anytime.
-					</p>
-				</div>
-
-				{/* EMPTY */}
-
-				{orders.length === 0 ? (
-					<div
-						className="
-							border border-white/10
-							bg-white/[0.03]
-							backdrop-blur-2xl
-							rounded-[36px]
-							p-12
-							text-center
-						"
-					>
-						<div
+					<div className="mb-10">
+						<p
 							className="
-								w-20
-								h-20
-								mx-auto
-								rounded-3xl
-								bg-orange-500/10
-								border border-orange-500/20
-								flex items-center justify-center
-								mb-6
+								text-orange-400
+								text-sm
+								font-medium
+								mb-3
 							"
 						>
-							<PackageCheck className="w-10 h-10 text-orange-500" />
-						</div>
-
-						<h2 className="text-3xl font-black text-white">No Orders Yet</h2>
-
-						<p className="mt-4 text-gray-400 max-w-md mx-auto">
-							Start exploring delicious meals and place your first order from
-							BiteRush.
+							Track & manage your orders
 						</p>
 
-						<Button
+						<h1
 							className="
-								mt-8
-								h-12
-								px-6
-								rounded-2xl
-								bg-orange-500
-								hover:bg-orange-600
+								text-3xl
+								md:text-4xl
+								font-bold
 								text-white
+								tracking-tight
 							"
 						>
-							Explore Menu
-						</Button>
+							Your Orders
+						</h1>
 					</div>
-				) : (
-					<div className="space-y-8">
-						{orders.map((order) => {
-							const currentStep = getCurrentStep(order.status);
 
-							return (
-								<div
-									key={order._id}
-									className="
-										relative
-										overflow-hidden
-										rounded-[36px]
-										border border-white/10
-										bg-white/[0.03]
-										backdrop-blur-2xl
-										p-7
-										md:p-8
-									"
-								>
-									{/* TOP */}
+					{/* EMPTY */}
 
+					{orders.length === 0 ? (
+						<div
+							className="
+								border border-white/10
+								bg-white/[0.03]
+								backdrop-blur-xl
+								rounded-3xl
+								p-10
+								text-center
+							"
+						>
+							<div
+								className="
+									w-14 h-14
+									rounded-2xl
+									bg-orange-500/10
+									border border-orange-500/20
+									flex items-center justify-center
+									mx-auto mb-5
+								"
+							>
+								<PackageCheck className="w-7 h-7 text-orange-400" />
+							</div>
+
+							<h2 className="text-xl font-semibold text-white">
+								No orders yet
+							</h2>
+
+							<p className="text-gray-400 mt-2 text-sm">
+								Start ordering your favorite meals.
+							</p>
+						</div>
+					) : (
+						<div className="space-y-5">
+							{orders.map((order) => {
+								const currentStep = getCurrentStep(order.status);
+
+								return (
 									<div
+										key={order._id}
 										className="
-											flex
-											flex-col
-											lg:flex-row
-											lg:items-center
-											lg:justify-between
-											gap-6
-											pb-7
-											border-b border-white/10
+											rounded-3xl
+											border border-white/10
+											bg-white/[0.03]
+											backdrop-blur-xl
+											p-5 md:p-6
 										"
 									>
-										<div className="space-y-3">
-											<div className="flex items-center gap-3 flex-wrap">
-												<h2
-													className="
-														text-2xl
-														font-black
-														text-white
-													"
-												>
-													Order #{order._id.slice(-6)}
-												</h2>
+										{/* TOP */}
+
+										<div
+											className="
+												flex
+												flex-col
+												md:flex-row
+												md:items-start
+												md:justify-between
+												gap-5
+											"
+										>
+											<div>
+												<div className="flex items-center gap-2 flex-wrap">
+													<h2
+														className="
+															text-lg
+															font-semibold
+															text-white
+														"
+													>
+														Order #{order._id.slice(-6)}
+													</h2>
+
+													<div
+														className={`
+															px-3 py-1
+															rounded-full
+															text-xs
+															font-medium
+															border
+															${getStatusStyle(order.status)}
+														`}
+													>
+														{order.status.replaceAll("_", " ")}
+													</div>
+
+													<div
+														className={`
+															px-3 py-1
+															rounded-full
+															text-xs
+															font-medium
+															border
+															${
+																order.paymentStatus === "paid"
+																	? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+																	: "bg-red-500/10 text-red-400 border-red-500/20"
+															}
+														`}
+													>
+														<div className="flex items-center gap-1.5">
+															{order.paymentMethod === "cod" ? (
+																<Wallet className="w-3.5 h-3.5" />
+															) : (
+																<CreditCard className="w-3.5 h-3.5" />
+															)}
+
+															<span>
+																{order.paymentMethod === "cod"
+																	? "COD"
+																	: "Razorpay"}{" "}
+																• {order.paymentStatus}
+															</span>
+														</div>
+													</div>
+												</div>
 
 												<div
-													className={`
-														px-4 py-2
-														rounded-full
-														text-sm
-														font-semibold
-														border
-														${getStatusColor(order.status)}
-													`}
+													className="
+														flex items-center gap-2
+														text-gray-500
+														text-xs
+														mt-3
+													"
 												>
-													{order.status}
+													<Clock3 className="w-3.5 h-3.5" />
+
+													{new Date(order.createdAt).toLocaleString()}
 												</div>
 											</div>
 
-											<div
-												className="
-													flex
-													items-center
-													gap-2
-													text-gray-400
-													text-sm
-												"
-											>
-												<Clock3 className="w-4 h-4" />
+											<div className="text-left md:text-right">
+												<p className="text-xs text-gray-500 mb-1">Total</p>
 
-												{new Date(order.createdAt).toLocaleString()}
+												<h3
+													className="
+														text-2xl
+														font-bold
+														text-white
+													"
+												>
+													₹{order.totalAmount}
+												</h3>
 											</div>
 										</div>
 
-										<div className="text-left lg:text-right">
-											<p className="text-sm text-gray-500 mb-1">Total Amount</p>
+										{/* ITEMS */}
 
-											<h3
-												className="
-													text-4xl
-													font-black
-													text-white
-												"
-											>
-												₹{order.totalAmount}
-											</h3>
-										</div>
-									</div>
-
-									{/* ITEMS */}
-
-									<div className="py-7">
-										<h3
-											className="
-												text-lg
-												font-bold
-												text-white
-												mb-5
-											"
-										>
-											Items Ordered
-										</h3>
-
-										<div className="space-y-4">
-											{order.items?.map((item, idx) => (
+										<div className="mt-6 space-y-3">
+											{order.items.map((item, idx) => (
 												<div
 													key={idx}
 													className="
-														flex
-														items-center
-														justify-between
+														flex items-center justify-between
 														bg-white/[0.03]
 														border border-white/5
 														rounded-2xl
-														p-4
+														px-4 py-3
 													"
 												>
 													<div>
-														<h4 className="font-semibold text-white">
+														<h4
+															className="
+																text-sm
+																font-medium
+																text-white
+															"
+														>
 															{item.name}
 														</h4>
 
-														<p className="text-sm text-gray-500 mt-1">
-															Quantity: {item.quantity}
+														<p
+															className="
+																text-xs
+																text-gray-500
+																mt-1
+															"
+														>
+															Qty {item.quantity}
 														</p>
 													</div>
 
 													<p
 														className="
-															text-lg
-															font-bold
+															text-sm
+															font-semibold
 															text-white
 														"
 													>
@@ -379,182 +355,136 @@ export default function OrdersPage() {
 												</div>
 											))}
 										</div>
-									</div>
 
-									{/* DELIVERY TRACK */}
+										{/* TRACKER */}
 
-									<div
-										className="
-											py-7
-											border-t border-white/10
-										"
-									>
-										<h3
-											className="
-												text-lg
-												font-bold
-												text-white
-												mb-8
-											"
-										>
-											Delivery Progress
-										</h3>
+										<div className="mt-7">
+											<div
+												className="
+													grid grid-cols-4
+													gap-3
+												"
+											>
+												{[
+													{
+														icon: PackageCheck,
+														label: "Confirmed",
+													},
+													{
+														icon: ChefHat,
+														label: "Preparing",
+													},
+													{
+														icon: Bike,
+														label: "Delivery",
+													},
+													{
+														icon: CheckCircle2,
+														label: "Delivered",
+													},
+												].map((step, index) => {
+													const active = index <= currentStep;
+
+													const Icon = step.icon;
+
+													return (
+														<div
+															key={step.label}
+															className="
+																flex
+																flex-col
+																items-center
+																text-center
+															"
+														>
+															<div
+																className={`
+																	w-11 h-11
+																	rounded-2xl
+																	border
+																	flex items-center justify-center
+																	transition-all
+																	${
+																		active
+																			? "bg-orange-500 border-orange-500 text-white"
+																			: "bg-white/[0.03] border-white/10 text-gray-500"
+																	}
+																`}
+															>
+																<Icon className="w-5 h-5" />
+															</div>
+
+															<p
+																className={`
+																	mt-2
+																	text-[11px]
+																	font-medium
+																	${active ? "text-white" : "text-gray-500"}
+																`}
+															>
+																{step.label}
+															</p>
+														</div>
+													);
+												})}
+											</div>
+										</div>
+
+										{/* ADDRESS */}
 
 										<div
 											className="
-												grid
-												grid-cols-2
-												md:grid-cols-4
-												gap-6
+												mt-7
+												pt-5
+												border-t border-white/10
+												flex items-start gap-3
 											"
 										>
-											{[
-												{
-													label: "Confirmed",
-													icon: PackageCheck,
-												},
-												{
-													label: "Preparing",
-													icon: ChefHat,
-												},
-												{
-													label: "Out for Delivery",
-													icon: Bike,
-												},
-												{
-													label: "Delivered",
-													icon: CheckCircle2,
-												},
-											].map((step, index) => {
-												const active = index <= currentStep;
-
-												const Icon = step.icon;
-
-												return (
-													<div
-														key={step.label}
-														className="
-															relative
-															flex
-															flex-col
-															items-center
-															text-center
-														"
-													>
-														<div
-															className={`
-																w-16
-																h-16
-																rounded-2xl
-																border
-																flex
-																items-center
-																justify-center
-																transition-all
-																duration-300
-																${
-																	active
-																		? `
-																			bg-orange-500
-																			border-orange-500
-																			text-white
-																			shadow-lg shadow-orange-500/20
-																		`
-																		: `
-																			bg-white/[0.03]
-																			border-white/10
-																			text-gray-500
-																		`
-																}
-															`}
-														>
-															<Icon className="w-7 h-7" />
-														</div>
-
-														<p
-															className={`
-																mt-4
-																text-sm
-																font-medium
-																${active ? "text-white" : "text-gray-500"}
-															`}
-														>
-															{step.label}
-														</p>
-													</div>
-												);
-											})}
-										</div>
-									</div>
-
-									{/* ADDRESS */}
-
-									<div
-										className="
-											pt-7
-											border-t border-white/10
-											flex
-											flex-col
-											lg:flex-row
-											lg:items-center
-											lg:justify-between
-											gap-6
-										"
-									>
-										<div className="flex items-start gap-4">
 											<div
 												className="
-													w-12
-													h-12
-													rounded-2xl
+													w-10 h-10
+													rounded-xl
 													bg-orange-500/10
 													border border-orange-500/20
 													flex items-center justify-center
-													flex-shrink-0
+													shrink-0
 												"
 											>
-												<MapPin className="w-5 h-5 text-orange-500" />
+												<MapPin className="w-4 h-4 text-orange-400" />
 											</div>
 
 											<div>
-												<h4 className="text-white font-semibold mb-1">
+												<p
+													className="
+														text-sm
+														font-medium
+														text-white
+														mb-1
+													"
+												>
 													Delivery Address
-												</h4>
+												</p>
 
-												{order.address ? (
-													<p className="text-gray-400 leading-relaxed">
-														{order.address.street}, {order.address.city},{" "}
-														{order.address.state} - {order.address.pincode}
-													</p>
-												) : (
-													<p className="text-red-400">Address unavailable</p>
-												)}
+												<p
+													className="
+														text-sm
+														text-gray-400
+														leading-relaxed
+													"
+												>
+													{order.address?.street}, {order.address?.city},{" "}
+													{order.address?.state} - {order.address?.pincode}
+												</p>
 											</div>
 										</div>
-
-										<Button
-											className="
-												h-12
-												px-6
-												rounded-2xl
-												bg-white/[0.05]
-												border border-white/10
-												text-white
-												hover:bg-orange-500
-												hover:border-orange-500
-											"
-										>
-											<RefreshCcw className="w-4 h-4 mr-2" />
-											Reorder
-										</Button>
 									</div>
-								</div>
-							);
-						})}
-					</div>
-				)}
-			</div>
-		</section>
+								);
+							})}
+						</div>
+					)}
+				</div>
+			</section>
+				<Footer />
 		</ProtectedRoute>
 	);
 }
