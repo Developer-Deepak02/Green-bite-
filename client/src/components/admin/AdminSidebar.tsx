@@ -7,13 +7,14 @@ import { usePathname } from "next/navigation";
 import {
 	LayoutDashboard,
 	ShoppingCart,
-  ShoppingBag,
+	ShoppingBag,
 	MenuSquare,
 	TicketPercent,
 	Users,
 	Star,
 	LogOut,
 	X,
+	LayoutGrid,
 } from "lucide-react";
 
 import { useState } from "react";
@@ -21,11 +22,11 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const links = [
-  {
-	label: "Store",
-	href: "/",
-	icon: ShoppingBag,
-},
+	{
+		label: "Store",
+		href: "/",
+		icon: ShoppingBag,
+	},
 	{
 		label: "Dashboard",
 		href: "/admin",
@@ -40,6 +41,11 @@ const links = [
 		label: "Menu",
 		href: "/admin/menu",
 		icon: MenuSquare,
+	},
+	{
+		label: "Categories",
+		href: "/admin/categories",
+		icon: LayoutGrid,
 	},
 	{
 		label: "Coupons",
