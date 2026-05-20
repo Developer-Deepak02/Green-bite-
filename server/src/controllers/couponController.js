@@ -181,3 +181,26 @@ exports.deleteCoupon = async (req, res) => {
 		});
 	}
 };
+
+// ================= PERMANENT DELETE COUPON =================
+exports.permanentlyDeleteCoupon = async (req, res) => {
+	try {
+		const coupon = await Coupon.findById(req.params.id);
+
+		if (!coupon) {
+			return res.status(404).json({
+				message: "Coupon not found",
+			});
+		}
+
+		await coupon.deleteOne();
+
+		res.json({
+			message: "Coupon deleted permanently",
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: error.message,
+		});
+	}
+};

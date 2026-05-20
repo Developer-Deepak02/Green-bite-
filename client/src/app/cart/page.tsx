@@ -13,6 +13,8 @@ import {
 	Ticket,
 	CreditCard,
 	Wallet,
+	X,
+	CheckCircle2,
 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
 import { toast } from "sonner";
@@ -38,6 +40,14 @@ export default function CartPage() {
 		"razorpay",
 	);
 
+	/* COUPON STATES */
+
+	const [couponLoading, setCouponLoading] = useState(false);
+
+	const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+
+	const [discountAmount, setDiscountAmount] = useState(0);
+
 	/* TOTALS */
 
 	const subtotal = items.reduce(
@@ -51,7 +61,7 @@ export default function CartPage() {
 
 	const deliveryFee = subtotal > 499 ? 0 : 49;
 
-	const total = subtotal + gst + platformFee + deliveryFee;
+	const total = subtotal + gst + platformFee + deliveryFee - discountAmount;
 
 	/* FETCH ADDRESSES */
 
@@ -83,6 +93,73 @@ export default function CartPage() {
 
 		fetchAddresses();
 	}, []);
+
+	/* APPLY COUPON */
+
+	const applyCoupon = async () => {
+		try {
+			if (!promoCode.trim()) {
+				toast.error("Please enter coupon code");
+
+				return;
+			}
+
+			setCouponLoading(true);
+
+			const token = localStorage.getItem("token");
+
+			const res = await fetch("http://localhost:5000/api/coupons/apply", {
+				method: "POST",
+
+				headers: {
+					"Content-Type": "application/json",
+
+					Authorization: `Bearer ${token}`,
+				},
+
+				body: JSON.stringify({
+					code: promoCode,
+					totalAmount: subtotal,
+				}),
+			});
+
+			const data = await res.json();
+
+			if (!res.ok) {
+				toast.error(data.message || "Failed to apply coupon");
+
+				setAppliedCoupon(null);
+
+				setDiscountAmount(0);
+
+				return;
+			}
+
+			setAppliedCoupon(data);
+
+			setDiscountAmount(data.discountAmount);
+
+			toast.success(`Coupon applied • You saved ₹${data.discountAmount}`);
+		} catch (error) {
+			console.error(error);
+
+			toast.error("Failed to apply coupon");
+		} finally {
+			setCouponLoading(false);
+		}
+	};
+
+	/* REMOVE COUPON */
+
+	const removeCoupon = () => {
+		setAppliedCoupon(null);
+
+		setDiscountAmount(0);
+
+		setPromoCode("");
+
+		toast.success("Coupon removed");
+	};
 
 	/* PLACE ORDER */
 
@@ -116,7 +193,7 @@ export default function CartPage() {
 
 					address: selectedAddress,
 
-					couponCode: promoCode || undefined,
+					couponCode: appliedCoupon?.couponCode || undefined,
 
 					paymentMethod,
 				}),
@@ -472,20 +549,97 @@ export default function CartPage() {
 
 								{/* PROMO */}
 
-								<div className="relative">
-									<Ticket className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+								<div className="space-y-3">
+									<div className="relative">
+										<Ticket className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
 
-									<input
-										type="text"
-										placeholder="Promo code"
-										value={promoCode}
-										onChange={(e) => setPromoCode(e.target.value)}
-										className="w-full h-12 rounded-2xl bg-white/[0.03] border border-white/10 pl-11 pr-20 text-white placeholder:text-gray-500 outline-none focus:border-orange-500/40"
-									/>
+										<input
+											type="text"
+											placeholder="Promo code"
+											value={promoCode}
+											onChange={(e) =>
+												setPromoCode(e.target.value.toUpperCase())
+											}
+											disabled={!!appliedCoupon}
+											className="
+												w-full
+												h-12
+												rounded-2xl
+												bg-white/[0.03]
+												border border-white/10
+												pl-11
+												pr-24
+												text-white
+												placeholder:text-gray-500
+												outline-none
+												focus:border-orange-500/40
+												disabled:opacity-60
+											"
+										/>
 
-									<button className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-orange-400 hover:text-orange-300">
-										Apply
-									</button>
+										{!appliedCoupon ? (
+											<button
+												onClick={applyCoupon}
+												disabled={couponLoading}
+												className="
+													absolute
+													right-3
+													top-1/2
+													-translate-y-1/2
+													text-sm
+													font-semibold
+													text-orange-400
+													hover:text-orange-300
+													disabled:opacity-50
+												"
+											>
+												{couponLoading ? "Applying..." : "Apply"}
+											</button>
+										) : (
+											<button
+												onClick={removeCoupon}
+												className="
+													absolute
+													right-3
+													top-1/2
+													-translate-y-1/2
+													w-8
+													h-8
+													rounded-xl
+													bg-red-500/10
+													border border-red-500/20
+													text-red-400
+													flex items-center justify-center
+												"
+											>
+												<X className="w-4 h-4" />
+											</button>
+										)}
+									</div>
+
+									{appliedCoupon && (
+										<div className="rounded-2xl bg-green-500/10 border border-green-500/20 p-4">
+											<div className="flex items-start gap-3">
+												<div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center shrink-0">
+													<CheckCircle2 className="w-5 h-5 text-green-400" />
+												</div>
+
+												<div>
+													<p className="text-sm font-semibold text-green-400">
+														Coupon Applied
+													</p>
+
+													<p className="text-white font-semibold mt-1">
+														{appliedCoupon.couponCode}
+													</p>
+
+													<p className="text-sm text-green-300 mt-1">
+														You saved ₹{discountAmount}
+													</p>
+												</div>
+											</div>
+										</div>
+									)}
 								</div>
 
 								{/* PAYMENT METHOD */}
@@ -574,6 +728,24 @@ export default function CartPage() {
 											{deliveryFee === 0 ? "FREE" : `₹${deliveryFee}`}
 										</span>
 									</div>
+
+									{/* DISCOUNT */}
+
+									{discountAmount > 0 && (
+										<div className="flex items-center justify-between">
+											<div>
+												<p className="text-green-400">Coupon Discount</p>
+
+												<p className="text-[11px] text-green-500 mt-1">
+													Applied coupon savings
+												</p>
+											</div>
+
+											<span className="text-green-400 font-bold">
+												- ₹{discountAmount}
+											</span>
+										</div>
+									)}
 
 									{deliveryFee === 0 && (
 										<div className="rounded-2xl bg-green-500/10 border border-green-500/20 p-3">
