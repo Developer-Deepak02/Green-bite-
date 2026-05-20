@@ -47,10 +47,7 @@ export default function CategoryTabs({
 	return (
 		<div className="sticky top-[72px] z-30">
 			<div
-				className="
-					backdrop-blur-2xl
-					bg-[#081028]/80
-					border-y border-white/5
+				className="	
 					py-5
 				"
 			>

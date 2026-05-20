@@ -15,6 +15,7 @@ import {
 	CreditCard,
 	Wallet,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Order {
 	_id: string;
@@ -72,6 +73,9 @@ export default function OrdersPage() {
 				}
 			} catch (error) {
 				console.error(error);
+
+				toast.error("Failed to load orders");
+
 				setOrders([]);
 			} finally {
 				setLoading(false);
@@ -79,6 +83,10 @@ export default function OrdersPage() {
 		};
 
 		fetchOrders();
+
+		const interval = setInterval(fetchOrders, 5000);
+
+		return () => clearInterval(interval);
 	}, []);
 
 	const getCurrentStep = (status: string) => {

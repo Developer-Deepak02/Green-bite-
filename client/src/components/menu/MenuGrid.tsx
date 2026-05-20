@@ -12,6 +12,7 @@ import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
 
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface MenuGridProps {
 	items: MenuItem[];
@@ -312,33 +313,41 @@ export default function MenuGrid({ items, loading }: MenuGridProps) {
 												</div>
 											</div>
 
-											<Button
-												size="icon"
-												onClick={(e) => {
-													e.preventDefault();
+										<Button
+	size="icon"
+	onClick={(e) => {
+		e.preventDefault();
 
-													e.stopPropagation();
+		e.stopPropagation();
 
-													addToCart({
-														_id: item._id,
-														name: item.name,
-														price: item.price,
-														quantity: 1,
-														image: item.image,
-													});
-												}}
-												className="
-													w-14
-													h-14
-													rounded-2xl
-													bg-orange-500
-													hover:bg-orange-600
-													text-white
-													shadow-xl shadow-orange-500/20
-												"
-											>
-												<Plus className="w-5 h-5" />
-											</Button>
+		if (item.isAvailable === false) {
+			toast.error("This item is currently unavailable");
+
+			return;
+		}
+
+		addToCart({
+			_id: item._id,
+			name: item.name,
+			price: item.price,
+			quantity: 1,
+			image: item.image,
+		});
+
+		toast.success(`${item.name} added to cart`);
+	}}
+	className="
+		w-14
+		h-14
+		rounded-2xl
+		bg-orange-500
+		hover:bg-orange-600
+		text-white
+		shadow-xl shadow-orange-500/20
+	"
+>
+	<Plus className="w-5 h-5" />
+</Button>
 										</div>
 									</div>
 

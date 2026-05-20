@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
+import { toast } from "sonner";
 export interface CartItem {
 	_id: string;
 	name: string;
@@ -33,8 +33,12 @@ export const useCartStore = create<CartStore>()(
 			addToCart: (item) =>
 				set((state) => {
 					const existing = state.items.find((i) => i._id === item._id);
+
 					// IF ITEM EXISTS
+
 					if (existing) {
+						toast.success(`${item.name} quantity updated`);
+
 						return {
 							items: state.items.map((i) =>
 								i._id === item._id
@@ -48,6 +52,8 @@ export const useCartStore = create<CartStore>()(
 					}
 
 					// ADD NEW ITEM
+
+					toast.success(`${item.name} added to cart`);
 
 					return {
 						items: [
@@ -63,9 +69,17 @@ export const useCartStore = create<CartStore>()(
 			// REMOVE ITEM
 
 			removeFromCart: (id) =>
-				set((state) => ({
-					items: state.items.filter((i) => i._id !== id),
-				})),
+				set((state) => {
+					const item = state.items.find((i) => i._id === id);
+
+					if (item) {
+						toast.success(`${item.name} removed from cart`);
+					}
+
+					return {
+						items: state.items.filter((i) => i._id !== id),
+					};
+				}),
 
 			// INCREASE QUANTITY
 
@@ -99,10 +113,13 @@ export const useCartStore = create<CartStore>()(
 
 			// CLEAR CART
 
-			clearCart: () =>
+			clearCart: () => {
+				toast.success("Cart cleared");
+
 				set({
 					items: [],
-				}),
+				});
+			},
 
 			// TOTAL ITEMS
 

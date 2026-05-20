@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import { useState } from "react";
-
 import {
 	ArrowRight,
 	Eye,
@@ -14,20 +12,15 @@ import {
 	ShieldCheck,
 	User,
 } from "lucide-react";
-
+import { toast } from "sonner"; 
 import { useAuthStore } from "@/store/useAuthStore";
 
 export default function RegisterPage() {
 	const router = useRouter();
-
 	const { setAuth } = useAuthStore();
-
 	const [showPassword, setShowPassword] = useState(false);
-
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
 	const [loading, setLoading] = useState(false);
-
 	const [form, setForm] = useState({
 		name: "",
 		email: "",
@@ -37,60 +30,67 @@ export default function RegisterPage() {
 
 	/* REGISTER */
 
-	const handleRegister = async (e: React.FormEvent) => {
-		e.preventDefault();
+const handleRegister = async (e: React.FormEvent) => {
+	e.preventDefault();
 
-		/* VALIDATION */
+	/* VALIDATION */
 
-		if (form.password !== form.confirmPassword) {
-			alert("Passwords do not match");
+	if (form.password !== form.confirmPassword) {
+		toast.error("Passwords do not match");
+
+		return;
+	}
+
+	if (form.password.length < 6) {
+		toast.error("Password must be at least 6 characters");
+
+		return;
+	}
+
+	try {
+		setLoading(true);
+
+		const res = await fetch("http://localhost:5000/api/auth/register", {
+			method: "POST",
+
+			headers: {
+				"Content-Type": "application/json",
+			},
+
+			body: JSON.stringify({
+				name: form.name,
+				email: form.email,
+				password: form.password,
+			}),
+		});
+
+		const data = await res.json();
+
+		if (!res.ok) {
+			toast.error(data.message || "Registration failed");
+
 			return;
 		}
 
-		if (form.password.length < 6) {
-			alert("Password must be at least 6 characters");
-			return;
-		}
+		/* SAVE AUTH */
 
-		try {
-			setLoading(true);
+		setAuth(data.user, data.token);
 
-			const res = await fetch("http://localhost:5000/api/auth/register", {
-				method: "POST",
+		toast.success("Account created successfully 🎉");
 
-				headers: {
-					"Content-Type": "application/json",
-				},
+		/* REDIRECT */
 
-				body: JSON.stringify({
-					name: form.name,
-					email: form.email,
-					password: form.password,
-				}),
-			});
-
-			const data = await res.json();
-
-			if (!res.ok) {
-				alert(data.message || "Registration failed");
-				return;
-			}
-
-			/* SAVE AUTH */
-
-			setAuth(data.user, data.token);
-
-			/* REDIRECT */
-
+		setTimeout(() => {
 			router.push("/");
-		} catch (error) {
-			console.error(error);
+		}, 1000);
+	} catch (error) {
+		console.error(error);
 
-			alert("Something went wrong");
-		} finally {
-			setLoading(false);
-		}
-	};
+		toast.error("Something went wrong");
+	} finally {
+		setLoading(false);
+	}
+};
 
 	return (
 		<section className="relative min-h-screen bg-[#020817] overflow-hidden flex items-center justify-center px-4 py-10">

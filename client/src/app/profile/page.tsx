@@ -20,6 +20,7 @@ import {
 	Sparkles,
 	Heart,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export default function ProfilePage() {
 	const { user, logout } = useAuthStore();
@@ -28,11 +29,15 @@ export default function ProfilePage() {
 
 	const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
 
-	const handleLogout = () => {
-		logout();
+const handleLogout = () => {
+	toast.success("Logged out successfully");
 
+	logout();
+
+	setTimeout(() => {
 		window.location.href = "/";
-	};
+	}, 1000);
+};
 
 	const quickActions = [
 		{

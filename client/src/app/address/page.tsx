@@ -11,6 +11,7 @@ import {
 	User,
 	MapPinned,
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface Address {
 	_id: string;
@@ -76,6 +77,19 @@ export default function AddressPage() {
 
 	const handleAdd = async () => {
 		try {
+			if (
+				!form.fullName ||
+				!form.phone ||
+				!form.street ||
+				!form.city ||
+				!form.state ||
+				!form.pincode
+			) {
+				toast.error("Please fill all address fields");
+
+				return;
+			}
+
 			setAdding(true);
 
 			const res = await fetch("http://localhost:5000/api/addresses", {
@@ -93,9 +107,12 @@ export default function AddressPage() {
 			const data = await res.json();
 
 			if (!res.ok) {
-				alert(data.message);
+				toast.error(data.message || "Failed to add address");
+
 				return;
 			}
+
+			toast.success("Address added successfully");
 
 			setForm({
 				fullName: "",
@@ -109,6 +126,8 @@ export default function AddressPage() {
 			fetchAddresses();
 		} catch (error) {
 			console.error(error);
+
+			toast.error("Something went wrong");
 		} finally {
 			setAdding(false);
 		}
@@ -116,21 +135,31 @@ export default function AddressPage() {
 
 	/* DELETE ADDRESS */
 
-	const handleDelete = async (id: string) => {
-		try {
-			await fetch(`http://localhost:5000/api/addresses/${id}`, {
-				method: "DELETE",
+const handleDelete = async (id: string) => {
+	try {
+		const res = await fetch(`http://localhost:5000/api/addresses/${id}`, {
+			method: "DELETE",
 
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
 
-			fetchAddresses();
-		} catch (error) {
-			console.error(error);
+		if (!res.ok) {
+			toast.error("Failed to delete address");
+
+			return;
 		}
-	};
+
+		toast.success("Address deleted successfully");
+
+		fetchAddresses();
+	} catch (error) {
+		console.error(error);
+
+		toast.error("Something went wrong");
+	}
+};
 
 	return (
 		<ProtectedRoute>

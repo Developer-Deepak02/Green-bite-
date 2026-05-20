@@ -3,8 +3,18 @@ const app = require("./app");
 const connectDB = require("./config/db");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const path = require("path");
 // ================= DATABASE =================
 connectDB();
+
+// ================= STATIC UPLOADS =================
+
+app.use(
+	"/uploads",
+	require("express").static(
+		path.join(__dirname, "../uploads"),
+	),
+);
 // ================= SWAGGER CONFIG =================
 
 const swaggerOptions = {

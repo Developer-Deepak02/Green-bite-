@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck } from "lucide-react";
 
 import { useAuthStore } from "@/store/useAuthStore";
+import { toast } from "sonner";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -25,44 +26,49 @@ export default function LoginPage() {
 
 	/* LOGIN */
 
-	const handleLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
+const handleLogin = async (e: React.FormEvent) => {
+	e.preventDefault();
 
-		try {
-			setLoading(true);
+	try {
+		setLoading(true);
 
-			const res = await fetch("http://localhost:5000/api/auth/login", {
-				method: "POST",
+		const res = await fetch("http://localhost:5000/api/auth/login", {
+			method: "POST",
 
-				headers: {
-					"Content-Type": "application/json",
-				},
+			headers: {
+				"Content-Type": "application/json",
+			},
 
-				body: JSON.stringify(form),
-			});
+			body: JSON.stringify(form),
+		});
 
-			const data = await res.json();
+		const data = await res.json();
 
-			if (!res.ok) {
-				alert(data.message || "Login failed");
-				return;
-			}
+		if (!res.ok) {
+			toast.error(data.message || "Login failed");
 
-			/* SAVE AUTH */
-
-			setAuth(data.user, data.token);
-
-			/* REDIRECT */
-
-			router.push("/");
-		} catch (error) {
-			console.error(error);
-
-			alert("Something went wrong");
-		} finally {
-			setLoading(false);
+			return;
 		}
-	};
+
+		/* SAVE AUTH */
+
+		setAuth(data.user, data.token);
+
+		toast.success("Login successful 🎉");
+
+		/* REDIRECT */
+
+		setTimeout(() => {
+			router.push("/");
+		}, 1000);
+	} catch (error) {
+		console.error(error);
+
+		toast.error("Something went wrong");
+	} finally {
+		setLoading(false);
+	}
+};
 
 	return (
 		<section className="relative min-h-screen bg-[#020817] overflow-hidden flex items-center justify-center px-4 py-10">

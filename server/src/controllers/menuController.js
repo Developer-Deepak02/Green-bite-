@@ -10,6 +10,8 @@ exports.createMenuItem = async (req, res) => {
 			price,
 			category,
 			preparationTime,
+			isAvailable,
+			image,
 		} = req.body;
 
 		// Validation
@@ -19,20 +21,23 @@ exports.createMenuItem = async (req, res) => {
 			});
 		}
 
-		// Uploaded image URL from Cloudinary
-		const image = req.file ? req.file.path : null;
+		// Cloudinary image URL
+		const imageUrl = req.file ? req.file.path : image || "";
 
 		const item = await MenuItem.create({
 			name,
 			description,
 			price,
 			category,
-			image,
+			image: imageUrl,
 			preparationTime,
+			isAvailable,
 		});
 
 		res.status(201).json(item);
 	} catch (error) {
+		console.error("CREATE MENU ITEM ERROR:", error);
+
 		res.status(500).json({
 			message: error.message,
 		});
@@ -55,7 +60,7 @@ exports.getMenuItems = async (req, res) => {
 
 		// ================= QUERY =================
 
-		let query = {
+		const query = {
 			isAvailable: true,
 		};
 
@@ -65,14 +70,9 @@ exports.getMenuItems = async (req, res) => {
 		}
 
 		// Search filter
-		if (search) {
-			const escaped = search.replace(
-				/[.*+?^${}()|[\]\\]/g,
-				"\\$&",
-			);
-
+		if (typeof search === "string" && search.trim()) {
 			query.name = {
-				$regex: escaped,
+				$regex: search,
 				$options: "i",
 			};
 		}
@@ -129,10 +129,14 @@ exports.getMenuItems = async (req, res) => {
 		const totalItems = await MenuItem.countDocuments(query);
 
 		const items = await MenuItem.find(query)
-			.populate("category", "name")
+			.populate({
+				path: "category",
+				select: "name",
+			})
 			.sort(sortOption)
 			.skip(skip)
-			.limit(limitNumber);
+			.limit(limitNumber)
+			.lean();
 
 		// ================= RESPONSE =================
 
@@ -141,23 +145,21 @@ exports.getMenuItems = async (req, res) => {
 
 			pagination: {
 				totalItems,
-
 				currentPage: pageNumber,
-
-				totalPages: Math.ceil(
-					totalItems / limitNumber,
-				),
-
+				totalPages: Math.ceil(totalItems / limitNumber),
 				limit: limitNumber,
 			},
 		});
 	} catch (error) {
+		console.error("GET MENU ITEMS ERROR:", error);
+
 		res.status(500).json({
 			message: error.message,
 		});
 	}
 };
 
+// ================= SINGLE =================
 // GET SINGLE ITEM
 exports.getMenuItemById = async (req, res) => {
 	try {
@@ -167,12 +169,18 @@ exports.getMenuItemById = async (req, res) => {
 		);
 
 		if (!item) {
-			return res.status(404).json({ message: "Item not found" });
+			return res.status(404).json({
+				message: "Item not found",
+			});
 		}
 
 		res.json(item);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		console.error("GET SINGLE MENU ITEM ERROR:", error);
+
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
@@ -186,11 +194,13 @@ exports.updateMenuItem = async (req, res) => {
 			"price",
 			"category",
 			"preparationTime",
+			"isAvailable",
+			"image",
 		];
 
 		const updateData = {};
 
-		// Update normal fields
+		// Update fields
 		allowedFields.forEach((field) => {
 			if (req.body[field] !== undefined) {
 				updateData[field] = req.body[field];
@@ -202,13 +212,9 @@ exports.updateMenuItem = async (req, res) => {
 			updateData.image = req.file.path;
 		}
 
-		const item = await MenuItem.findByIdAndUpdate(
-			req.params.id,
-			updateData,
-			{
-				new: true,
-			}
-		);
+		const item = await MenuItem.findByIdAndUpdate(req.params.id, updateData, {
+			new: true,
+		});
 
 		if (!item) {
 			return res.status(404).json({
@@ -218,6 +224,8 @@ exports.updateMenuItem = async (req, res) => {
 
 		res.json(item);
 	} catch (error) {
+		console.error("UPDATE MENU ITEM ERROR:", error);
+
 		res.status(500).json({
 			message: error.message,
 		});
@@ -231,12 +239,20 @@ exports.deleteMenuItem = async (req, res) => {
 		const item = await MenuItem.findByIdAndDelete(req.params.id);
 
 		if (!item) {
-			return res.status(404).json({ message: "Item not found" });
+			return res.status(404).json({
+				message: "Item not found",
+			});
 		}
 
-		res.json({ message: "Item deleted successfully" });
+		res.json({
+			message: "Item deleted successfully",
+		});
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		console.error("DELETE MENU ITEM ERROR:", error);
+
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
@@ -247,10 +263,13 @@ exports.toggleAvailability = async (req, res) => {
 		const item = await MenuItem.findById(req.params.id);
 
 		if (!item) {
-			return res.status(404).json({ message: "Item not found" });
+			return res.status(404).json({
+				message: "Item not found",
+			});
 		}
 
 		item.isAvailable = !item.isAvailable;
+
 		await item.save();
 
 		res.json({
@@ -258,10 +277,15 @@ exports.toggleAvailability = async (req, res) => {
 			isAvailable: item.isAvailable,
 		});
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		console.error("TOGGLE AVAILABILITY ERROR:", error);
+
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };
 
+// ================= ADMIN =================
 // GET ALL MENU ITEMS FOR ADMIN
 exports.getAllMenuItemsAdmin = async (req, res) => {
 	try {
@@ -271,6 +295,10 @@ exports.getAllMenuItemsAdmin = async (req, res) => {
 
 		res.json(items);
 	} catch (error) {
-		res.status(500).json({ message: error.message });
+		console.error("ADMIN MENU ITEMS ERROR:", error);
+
+		res.status(500).json({
+			message: error.message,
+		});
 	}
 };

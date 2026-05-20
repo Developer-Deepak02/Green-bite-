@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Inter, Poppins } from "next/font/google";
 import Script from "next/script";
+
+import { Toaster } from "sonner";
+
 import "./globals.css";
+
 import { cn } from "@/lib/utils";
+
 import AuthProvider from "@/components/providers/AuthProvider";
 
 const geist = Geist({
@@ -53,7 +58,25 @@ export default function RootLayout({
 
 				{/* AUTH PROVIDER */}
 
-				<AuthProvider>{children}</AuthProvider>
+				<AuthProvider>
+					{children}
+
+					{/* TOASTER */}
+
+					<Toaster
+						position="top-right"
+						richColors
+						theme="dark"
+						closeButton
+						toastOptions={{
+							style: {
+								background: "#111827",
+								border: "1px solid rgba(255,255,255,0.08)",
+								color: "#fff",
+							},
+						}}
+					/>
+				</AuthProvider>
 			</body>
 		</html>
 	);

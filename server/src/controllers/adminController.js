@@ -219,3 +219,92 @@ exports.getDashboardStats = async (req, res) => {
 		});
 	}
 };
+
+// ================= GET ALL ORDERS =================
+
+exports.getAllOrders = async (req, res) => {
+	try {
+		const { status } = req.query;
+
+		const query = {};
+
+		if (status) {
+			query.status = status;
+		}
+
+		const orders = await Order.find(query)
+			.populate("user", "name email")
+			.sort({ createdAt: -1 });
+
+		res.json({
+			count: orders.length,
+			orders,
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: error.message,
+		});
+	}
+};
+
+// ================= UPDATE ORDER STATUS =================
+
+exports.updateOrderStatus = async (req, res) => {
+	try {
+		const { status } = req.body;
+
+		const allowedStatuses = [
+			"pending",
+			"confirmed",
+			"preparing",
+			"out_for_delivery",
+			"delivered",
+			"cancelled",
+		];
+
+		if (!allowedStatuses.includes(status)) {
+			return res.status(400).json({
+				message: "Invalid order status",
+			});
+		}
+
+		const order = await Order.findById(req.params.id);
+
+		if (!order) {
+			return res.status(404).json({
+				message: "Order not found",
+			});
+		}
+
+		order.status = status;
+
+		order.statusHistory.push({
+			status,
+			updatedAt: new Date(),
+		});
+
+		if (status === "delivered" && order.paymentMethod === "cod") {
+			order.isPaid = true;
+
+			order.paymentStatus = "paid";
+
+			order.paidAt = new Date();
+		}
+
+		await order.save();
+
+		const updatedOrder = await Order.findById(order._id).populate(
+			"user",
+			"name email",
+		);
+
+		res.json({
+			message: "Order status updated",
+			order: updatedOrder,
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: error.message,
+		});
+	}
+};

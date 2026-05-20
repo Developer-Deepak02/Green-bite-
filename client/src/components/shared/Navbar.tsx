@@ -1,9 +1,7 @@
 "use client";
-
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-
 import {
 	ShoppingCart,
 	User,
@@ -17,42 +15,30 @@ import {
 	Ticket,
 	Heart,
 } from "lucide-react";
-
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
-
 import SearchModal from "@/components/search/SearchModal";
-
 export default function Navbar() {
 	const pathname = usePathname();
-
 	const [mobileOpen, setMobileOpen] = useState(false);
-
 	const [scrolled, setScrolled] = useState(false);
-
 	const [searchOpen, setSearchOpen] = useState(false);
-
 	const items = useCartStore((state) => state.items);
-
 	const wishlistItems = useWishlistStore((state) => state.items);
-
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
-
 	const { user, logout } = useAuthStore();
-
 	const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
-
 	const handleLogout = () => {
-		logout();
-
-		setMobileOpen(false);
-
+	logout();
+	setMobileOpen(false);
+	toast.success("Logged out successfully");
+	setTimeout(() => {
 		window.location.href = "/";
-	};
-
+	}, 1000);
+};
 	const navLinks = [
 		{
 			name: "Home",
@@ -75,23 +61,17 @@ export default function Navbar() {
 			href: "/about",
 		},
 	];
-
 	useEffect(() => {
 		const handleScroll = () => {
 			setScrolled(window.scrollY > 10);
 		};
-
 		window.addEventListener("scroll", handleScroll);
-
 		const fetchWishlist = useWishlistStore.getState().fetchWishlist;
-
 		fetchWishlist();
-
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
-
 	return (
 		<header
 			className={`
@@ -117,7 +97,6 @@ export default function Navbar() {
 				"
 			>
 				{/* LEFT */}
-
 				<Link
 					href="/"
 					className="
@@ -127,7 +106,6 @@ export default function Navbar() {
 					"
 				>
 					{/* LOGO */}
-
 					<div
 						className="
 							relative
@@ -152,12 +130,9 @@ export default function Navbar() {
 								transition-opacity duration-300
 							"
 						/>
-
-						<HandPlatter className="w-5 h-5 text-white relative z-10" />
+				<HandPlatter className="w-5 h-5 text-white relative z-10" />
 					</div>
-
 					{/* BRAND */}
-
 					<div className="leading-tight">
 						<h1
 							className="
@@ -177,7 +152,6 @@ export default function Navbar() {
 								Rush
 							</span>
 						</h1>
-
 						<p
 							className="
 								text-[11px]
@@ -191,9 +165,7 @@ export default function Navbar() {
 						</p>
 					</div>
 				</Link>
-
 				{/* DESKTOP NAV */}
-
 				<nav
 					className="
 						hidden lg:flex
@@ -203,7 +175,6 @@ export default function Navbar() {
 				>
 					{navLinks.map((link) => {
 						const active = pathname === link.href;
-
 						return (
 							<Link
 								key={link.name}
@@ -218,7 +189,6 @@ export default function Navbar() {
 								`}
 							>
 								{link.name}
-
 								{active && (
 									<div
 										className="
@@ -236,12 +206,9 @@ export default function Navbar() {
 						);
 					})}
 				</nav>
-
 				{/* RIGHT */}
-
 				<div className="flex items-center gap-3">
 					{/* SEARCH */}
-
 					<Button
 						size="icon"
 						variant="outline"
@@ -261,9 +228,7 @@ export default function Navbar() {
 					>
 						<Search className="w-5 h-5" />
 					</Button>
-
 					{/* WISHLIST */}
-
 					<Link href="/wishlist">
 						<Button
 							size="icon"
@@ -283,7 +248,6 @@ export default function Navbar() {
 							"
 						>
 							<Heart className="w-5 h-5" />
-
 							{wishlistItems.length > 0 && (
 								<div
 									className="
@@ -306,9 +270,7 @@ export default function Navbar() {
 							)}
 						</Button>
 					</Link>
-
 					{/* CART */}
-
 					<Link href="/cart">
 						<Button
 							size="icon"
@@ -328,7 +290,6 @@ export default function Navbar() {
 							"
 						>
 							<ShoppingCart className="w-5 h-5" />
-
 							{totalItems > 0 && (
 								<div
 									className="
@@ -352,9 +313,7 @@ export default function Navbar() {
 							)}
 						</Button>
 					</Link>
-
 					{/* DESKTOP PROFILE */}
-
 					{user ? (
 						<Link href="/profile" className="hidden sm:block">
 							<button
@@ -393,9 +352,7 @@ export default function Navbar() {
 							</Button>
 						</Link>
 					)}
-
 					{/* MOBILE PROFILE */}
-
 					{user ? (
 						<Link href="/profile" className="sm:hidden">
 							<button
@@ -595,7 +552,6 @@ export default function Navbar() {
 					)}
 				</div>
 			)}
-
 			<SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 		</header>
 	);

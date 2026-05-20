@@ -20,21 +20,18 @@ exports.createOrder = async (req, res) => {
 			paymentMethod = "cod",
 		} = req.body;
 
-		// Validate cart
 		if (!items || items.length === 0) {
 			return res.status(400).json({
 				message: "Cart is empty",
 			});
 		}
 
-		// Validate address
 		if (!addressId) {
 			return res.status(400).json({
 				message: "Address is required",
 			});
 		}
 
-		// Validate payment method
 		const validPaymentMethods = ["cod", "razorpay"];
 
 		if (!validPaymentMethods.includes(paymentMethod)) {
@@ -43,7 +40,6 @@ exports.createOrder = async (req, res) => {
 			});
 		}
 
-		// Get address
 		const addressDoc = await Address.findOne({
 			_id: addressId,
 			user: req.user.id,
@@ -55,14 +51,13 @@ exports.createOrder = async (req, res) => {
 			});
 		}
 
-		// ================= BUILD SECURE ORDER ITEMS =================
-
 		let secureItems = [];
+
 		let subtotalAmount = 0;
+
 		let estimatedDeliveryTime = 0;
 
 		for (const item of items) {
-			// Fetch real menu item
 			const menuItem = await MenuItem.findById(item.menuItemId);
 
 			if (!menuItem) {
@@ -71,7 +66,6 @@ exports.createOrder = async (req, res) => {
 				});
 			}
 
-			// Availability check
 			if (!menuItem.isAvailable) {
 				return res.status(400).json({
 					message: `${menuItem.name} is unavailable`,
@@ -80,15 +74,12 @@ exports.createOrder = async (req, res) => {
 
 			const quantity = Number(item.quantity);
 
-			// Item total
 			const itemTotal = menuItem.price * quantity;
 
 			subtotalAmount += itemTotal;
 
-			// Delivery estimation
 			estimatedDeliveryTime += menuItem.preparationTime * quantity;
 
-			// Secure item snapshot
 			secureItems.push({
 				menuItemId: menuItem._id,
 				name: menuItem.name,
@@ -97,14 +88,12 @@ exports.createOrder = async (req, res) => {
 			});
 		}
 
-		// Minimum fallback
 		if (estimatedDeliveryTime < 20) {
 			estimatedDeliveryTime = 20;
 		}
 
-		// ================= COUPON LOGIC =================
-
 		let coupon = null;
+
 		let discountAmount = 0;
 
 		if (couponCode) {
@@ -119,50 +108,40 @@ exports.createOrder = async (req, res) => {
 				});
 			}
 
-			// Expiry check
 			if (new Date() > coupon.expiryDate) {
 				return res.status(400).json({
 					message: "Coupon expired",
 				});
 			}
 
-			// Usage limit
 			if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) {
 				return res.status(400).json({
 					message: "Coupon usage limit reached",
 				});
 			}
 
-			// Minimum order amount
 			if (subtotalAmount < coupon.minimumOrderAmount) {
 				return res.status(400).json({
 					message: `Minimum order amount is ₹${coupon.minimumOrderAmount}`,
 				});
 			}
 
-			// Calculate discount
 			if (coupon.discountType === "percentage") {
 				discountAmount = (subtotalAmount * coupon.discountValue) / 100;
 			} else {
 				discountAmount = coupon.discountValue;
 			}
 
-			// Prevent negative totals
 			if (discountAmount > subtotalAmount) {
 				discountAmount = subtotalAmount;
 			}
 
-			// Increment usage count
 			coupon.usedCount += 1;
 
 			await coupon.save();
 		}
 
-		// ================= FINAL TOTAL =================
-
 		const totalAmount = subtotalAmount - discountAmount;
-
-		// ================= ADDRESS SNAPSHOT =================
 
 		const addressSnapshot = {
 			fullName: addressDoc.fullName,
@@ -173,8 +152,6 @@ exports.createOrder = async (req, res) => {
 			pincode: addressDoc.pincode,
 		};
 
-		// ================= CREATE ORDER =================
-
 		const order = await Order.create({
 			user: req.user.id,
 			items: secureItems,
@@ -184,19 +161,17 @@ exports.createOrder = async (req, res) => {
 			totalAmount,
 			address: addressSnapshot,
 			paymentMethod,
+			status: paymentMethod === "cod" ? "confirmed" : "pending",
 			statusHistory: [
 				{
-					status: "pending",
+					status: paymentMethod === "cod" ? "confirmed" : "pending",
+					updatedAt: new Date(),
 				},
 			],
 			estimatedDeliveryTime,
-
-			// COD orders stay pending until payment/delivery
 			isPaid: false,
 			paymentStatus: "pending",
 		});
-
-		// ================= SEND ORDER EMAIL =================
 
 		const user = await User.findById(req.user.id);
 
@@ -209,8 +184,6 @@ exports.createOrder = async (req, res) => {
 			}),
 		});
 
-		// ================= RESPONSE =================
-
 		res.status(201).json(order);
 	} catch (error) {
 		res.status(500).json({
@@ -219,18 +192,21 @@ exports.createOrder = async (req, res) => {
 	}
 };
 
-// ================= USER =================
-
-// Get logged-in user's orders
+// ================= USER ORDERS =================
 exports.getUserOrders = async (req, res) => {
 	try {
 		const orders = await Order.find({
 			user: req.user.id,
-		}).sort({
-			createdAt: -1,
-		});
+		})
+			.sort({
+				createdAt: -1,
+			})
+			.populate("coupon", "code discountType discountValue");
 
-		res.json({ orders });
+		res.json({
+			count: orders.length,
+			orders,
+		});
 	} catch (error) {
 		res.status(500).json({
 			message: error.message,
@@ -241,10 +217,9 @@ exports.getUserOrders = async (req, res) => {
 // ================= GET SINGLE ORDER =================
 exports.getOrderById = async (req, res) => {
 	try {
-		const order = await Order.findById(req.params.id).populate(
-			"coupon",
-			"code discountType discountValue",
-		);
+		const order = await Order.findById(req.params.id)
+			.populate("coupon", "code discountType discountValue")
+			.populate("user", "name email");
 
 		if (!order) {
 			return res.status(404).json({
@@ -252,14 +227,23 @@ exports.getOrderById = async (req, res) => {
 			});
 		}
 
-		// Owner or admin only
-		if (order.user.toString() !== req.user.id && req.user.role !== "admin") {
+		if (
+			order.user._id.toString() !== req.user.id &&
+			req.user.role !== "admin"
+		) {
 			return res.status(403).json({
 				message: "Not authorized",
 			});
 		}
 
-		res.json(order);
+		res.json({
+			order,
+			tracking: {
+				currentStep: order.currentStep,
+				totalSteps: order.totalSteps,
+				progressPercentage: order.progressPercentage,
+			},
+		});
 	} catch (error) {
 		res.status(500).json({
 			message: error.message,
@@ -267,16 +251,25 @@ exports.getOrderById = async (req, res) => {
 	}
 };
 
-// ================= ADMIN =================
-
-// Get ALL orders (admin)
+// ================= ADMIN GET ALL ORDERS =================
 exports.getAllOrders = async (req, res) => {
 	try {
-		const orders = await Order.find()
+		const { status } = req.query;
+
+		const query = {};
+
+		if (status && status !== "all") {
+			query.status = status;
+		}
+
+		const orders = await Order.find(query)
 			.populate("user", "name email")
 			.sort({ createdAt: -1 });
 
-		res.json({ orders });
+		res.json({
+			count: orders.length,
+			orders,
+		});
 	} catch (error) {
 		res.status(500).json({
 			message: error.message,
@@ -318,44 +311,42 @@ exports.updateOrderStatus = async (req, res) => {
 			});
 		}
 
-		// Prevent updates after delivery
 		if (order.status === "delivered") {
 			return res.status(400).json({
 				message: "Delivered orders cannot be updated",
 			});
 		}
 
-		// Prevent updates after cancellation
 		if (order.status === "cancelled") {
 			return res.status(400).json({
 				message: "Cancelled orders cannot be updated",
 			});
 		}
 
-		// Prevent same status update
 		if (order.status === status) {
 			return res.status(400).json({
 				message: "Order already has this status",
 			});
 		}
 
-		// Update status
 		order.status = status;
 
-		// Save timeline history
 		order.statusHistory.push({
 			status,
 			updatedAt: new Date(),
 		});
 
-		// Auto payment update for COD
-		if (status === "delivered" && order.paymentMethod === "cod") {
+		if (status === "delivered") {
 			order.isPaid = true;
+
 			order.paymentStatus = "paid";
+
 			order.paidAt = new Date();
 		}
 
-		// ================= DELIVERY EMAIL =================
+		if (status === "cancelled") {
+			order.paymentStatus = "failed";
+		}
 
 		if (status === "delivered") {
 			const user = await User.findById(order.user);
@@ -372,9 +363,14 @@ exports.updateOrderStatus = async (req, res) => {
 
 		await order.save();
 
+		const updatedOrder = await Order.findById(order._id).populate(
+			"user",
+			"name email",
+		);
+
 		res.json({
 			message: "Order status updated",
-			order,
+			order: updatedOrder,
 		});
 	} catch (error) {
 		res.status(500).json({
