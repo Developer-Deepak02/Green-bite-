@@ -14,6 +14,8 @@ const couponRoutes = require("./routes/couponRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const userRoutes = require("./routes/userRoutes");
+const adminReviewRoutes = require("./routes/adminReviewRoutes");
+
 const app = express();
 // ================= SECURITY =================
 // CORS
@@ -52,6 +54,7 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/admin/reviews", adminReviewRoutes);
 // ================= HEALTH CHECK =================
 app.get("/api/health", (req, res) => {
 	res.status(200).json({

@@ -26,11 +26,27 @@ const reviewSchema = new mongoose.Schema(
 			trim: true,
 			maxlength: 500,
 		},
+
+		// Admin moderation
+		isApproved: {
+			type: Boolean,
+			default: false,
+		},
 	},
-	{ timestamps: true },
+	{
+		timestamps: true,
+	},
 );
 
-// One user can review one item only
-reviewSchema.index({ user: 1, menuItem: 1 }, { unique: true });
+// One user can review one menu item only
+reviewSchema.index(
+	{
+		user: 1,
+		menuItem: 1,
+	},
+	{
+		unique: true,
+	},
+);
 
 module.exports = mongoose.model("Review", reviewSchema);
