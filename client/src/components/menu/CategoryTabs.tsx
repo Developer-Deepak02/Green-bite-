@@ -8,6 +8,7 @@ import { api } from "@/lib/api";
 
 const allTab = {
 	_id: "all",
+
 	name: "All",
 };
 
@@ -18,11 +19,13 @@ interface CategoryTabsProps {
 }
 
 export default function CategoryTabs({
-	activeCategory = "All",
+	activeCategory = "all",
 
 	onCategoryChange,
 }: CategoryTabsProps) {
 	const [categories, setCategories] = useState<Category[]>([]);
+
+	// ================= FETCH CATEGORIES =================
 
 	useEffect(() => {
 		const fetchCategories = async () => {
@@ -38,19 +41,17 @@ export default function CategoryTabs({
 		fetchCategories();
 	}, []);
 
-	const handleCategoryChange = (categoryName: string) => {
+	// ================= HANDLE CATEGORY CHANGE =================
+
+	const handleCategoryChange = (categoryId: string) => {
 		if (onCategoryChange) {
-			onCategoryChange(categoryName);
+			onCategoryChange(categoryId);
 		}
 	};
 
 	return (
 		<div className="sticky top-[72px] z-30">
-			<div
-				className="	
-					py-5
-				"
-			>
+			<div className="py-5">
 				<div
 					className="
 						flex
@@ -66,12 +67,20 @@ export default function CategoryTabs({
 				>
 					{[allTab, ...categories].map((category) => {
 						const activeTab =
-							activeCategory.toLowerCase() === category.name.toLowerCase();
+							activeCategory === category._id ||
+							(activeCategory === "All" &&
+								category._id === "all");
 
 						return (
 							<button
 								key={category._id}
-								onClick={() => handleCategoryChange(category.name)}
+								onClick={() =>
+									handleCategoryChange(
+										category._id === "all"
+											? "All"
+											: category._id,
+									)
+								}
 								className={`
 									flex-shrink-0
 									h-12

@@ -49,13 +49,21 @@ export default function Navbar() {
 			href: "/menu",
 		},
 		{
-			name: "Offers",
-			href: "/offers",
+			name: "Categories",
+			href: "/categories",
 		},
 		{
 			name: "Orders",
 			href: "/orders",
 		},
+		...(user?.role === "admin"
+			? [
+					{
+						name: "Dashboard",
+						href: "/admin/",
+					},
+				]
+			: []),
 		{
 			name: "About",
 			href: "/about",
