@@ -13,6 +13,7 @@ const wishlistRoutes = require("./routes/wishlistRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const userRoutes = require("./routes/userRoutes");
 const app = express();
 // ================= SECURITY =================
 // CORS
@@ -50,6 +51,7 @@ app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/cart", cartRoutes);
+app.use("/api/users", userRoutes);
 // ================= HEALTH CHECK =================
 app.get("/api/health", (req, res) => {
 	res.status(200).json({

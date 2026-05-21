@@ -48,6 +48,20 @@ const userSchema = new mongoose.Schema(
 			enum: ["user", "admin"],
 			default: "user",
 		},
+		isBlocked: {
+			type: Boolean,
+			default: false,
+		},
+
+		blockedAt: {
+			type: Date,
+			default: null,
+		},
+
+		lastLoginAt: {
+			type: Date,
+			default: null,
+		},
 
 		// ================= WISHLIST =================
 

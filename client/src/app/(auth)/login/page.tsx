@@ -223,7 +223,7 @@ const handleLogin = async (e: React.FormEvent) => {
 						<p className="text-gray-400 text-sm">
 							Don&apos;t have an account?{" "}
 							<Link
-								href="/auth/register"
+								href="/register"
 								className="text-orange-400 hover:text-orange-300 font-medium"
 							>
 								Register
