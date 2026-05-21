@@ -17,6 +17,8 @@ import {
 	CheckCircle2,
 } from "lucide-react";
 import { useCartStore } from "@/store/useCartStore";
+import CheckoutNavbar from "@/components/shared/CheckoutNavbar";
+import CheckoutFooter from "@/components/shared/CheckoutFooter";
 import { toast } from "sonner";
 
 declare global {
@@ -375,6 +377,7 @@ export default function CartPage() {
 
 	return (
 		<ProtectedRoute>
+			<CheckoutNavbar />
 			<section className="relative min-h-screen bg-[#020817] overflow-hidden">
 				<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-orange-500/10 blur-[180px] rounded-full pointer-events-none" />
 
@@ -823,6 +826,7 @@ export default function CartPage() {
 					</div>
 				</div>
 			</section>
+			<CheckoutFooter />
 		</ProtectedRoute>
 	);
 }
