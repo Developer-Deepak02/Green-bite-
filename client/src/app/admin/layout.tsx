@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import AdminLayout from "@/components/admin/AdminLayout";
 
 interface Props {
@@ -7,5 +7,9 @@ interface Props {
 }
 
 export default function Layout({ children }: Props) {
-	return <AdminLayout>{children}</AdminLayout>;
+	return (
+		<ProtectedRoute>
+			<AdminLayout>{children}</AdminLayout>
+		</ProtectedRoute>
+	);
 }

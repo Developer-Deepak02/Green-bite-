@@ -13,6 +13,18 @@ import {
 	XCircle,
 } from "lucide-react";
 
+import {
+	ResponsiveContainer,
+	AreaChart,
+	Area,
+	XAxis,
+	YAxis,
+	Tooltip,
+	CartesianGrid,
+	LineChart,
+	Line,
+} from "recharts";
+
 interface DashboardData {
 	overview: {
 		totalOrders: number;
@@ -50,6 +62,21 @@ interface DashboardData {
 
 		createdAt: string;
 	}[];
+
+	growthStats: {
+		revenueGrowth: number;
+		orderGrowth: number;
+	};
+
+	revenueAnalytics: {
+		name: string;
+		revenue: number;
+	}[];
+
+	ordersAnalytics: {
+		name: string;
+		orders: number;
+	}[];
 }
 
 export default function AdminDashboardPage() {
@@ -73,6 +100,15 @@ export default function AdminDashboardPage() {
 		topSellingItems: [],
 
 		recentOrders: [],
+
+		growthStats: {
+			revenueGrowth: 0,
+			orderGrowth: 0,
+		},
+
+		revenueAnalytics: [],
+
+		ordersAnalytics: [],
 	});
 
 	const [loading, setLoading] = useState(true);
@@ -89,8 +125,6 @@ export default function AdminDashboardPage() {
 				});
 
 				const result = await res.json();
-
-				console.log("DASHBOARD RESPONSE:", result);
 
 				if (result?.overview) {
 					setData(result);
@@ -131,11 +165,13 @@ export default function AdminDashboardPage() {
 			title: "Total Revenue",
 			value: `₹${data.overview.totalRevenue}`,
 			icon: IndianRupee,
+			growth: data.growthStats.revenueGrowth,
 		},
 		{
 			title: "Total Orders",
 			value: data.overview.totalOrders,
 			icon: ShoppingBag,
+			growth: data.growthStats.orderGrowth,
 		},
 		{
 			title: "Users",
@@ -151,7 +187,7 @@ export default function AdminDashboardPage() {
 
 	return (
 		<div className="min-h-screen bg-[#020817] text-white">
-			{/* BACKGROUND */}
+			{/* BG */}
 
 			<div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-orange-500/10 blur-[180px] rounded-full pointer-events-none" />
 
@@ -190,6 +226,20 @@ export default function AdminDashboardPage() {
 										<p className="text-gray-400 text-sm">{card.title}</p>
 
 										<h2 className="text-3xl font-black mt-3">{card.value}</h2>
+
+										{typeof card.growth === "number" && (
+											<p
+												className={`
+													text-sm
+													mt-4
+													font-medium
+													${card.growth >= 0 ? "text-emerald-400" : "text-red-400"}
+												`}
+											>
+												{card.growth >= 0 ? "↗" : "↘"} {Math.abs(card.growth)}%
+												this week
+											</p>
+										)}
 									</div>
 
 									<div
@@ -274,6 +324,159 @@ export default function AdminDashboardPage() {
 					})}
 				</div>
 
+				{/* CHARTS */}
+
+				<div className="grid xl:grid-cols-2 gap-6 mt-10">
+					{/* REVENUE */}
+
+					<div
+						className="
+							rounded-3xl
+							border border-white/10
+							bg-white/[0.03]
+							backdrop-blur-xl
+							p-6
+						"
+					>
+						<div className="flex items-center justify-between mb-8">
+							<div>
+								<h2 className="text-2xl font-bold">Revenue Analytics</h2>
+
+								<p className="text-gray-400 text-sm mt-1">
+									Last 7 days revenue
+								</p>
+							</div>
+
+							<div
+								className="
+									w-12 h-12
+									rounded-2xl
+									bg-orange-500/10
+									border border-orange-500/20
+									flex items-center justify-center
+								"
+							>
+								<IndianRupee className="w-5 h-5 text-orange-400" />
+							</div>
+						</div>
+
+						<div className="h-[320px]">
+							<ResponsiveContainer width="100%" height="100%">
+								<AreaChart data={data.revenueAnalytics}>
+									<defs>
+										<linearGradient
+											id="colorRevenue"
+											x1="0"
+											y1="0"
+											x2="0"
+											y2="1"
+										>
+											<stop offset="0%" stopColor="#f97316" stopOpacity={0.5} />
+
+											<stop offset="100%" stopColor="#f97316" stopOpacity={0} />
+										</linearGradient>
+									</defs>
+
+									<CartesianGrid
+										strokeDasharray="3 3"
+										stroke="rgba(255,255,255,0.05)"
+									/>
+
+									<XAxis dataKey="name" stroke="#6b7280" />
+
+									<YAxis stroke="#6b7280" />
+
+									<Tooltip
+										contentStyle={{
+											background: "#0f172a",
+											border: "1px solid rgba(255,255,255,0.1)",
+											borderRadius: "16px",
+										}}
+									/>
+
+									<Area
+										type="monotone"
+										dataKey="revenue"
+										stroke="#f97316"
+										fillOpacity={1}
+										fill="url(#colorRevenue)"
+										strokeWidth={3}
+									/>
+								</AreaChart>
+							</ResponsiveContainer>
+						</div>
+					</div>
+
+					{/* ORDERS */}
+
+					<div
+						className="
+							rounded-3xl
+							border border-white/10
+							bg-white/[0.03]
+							backdrop-blur-xl
+							p-6
+						"
+					>
+						<div className="flex items-center justify-between mb-8">
+							<div>
+								<h2 className="text-2xl font-bold">Order Analytics</h2>
+
+								<p className="text-gray-400 text-sm mt-1">Last 7 days orders</p>
+							</div>
+
+							<div
+								className="
+									w-12 h-12
+									rounded-2xl
+									bg-orange-500/10
+									border border-orange-500/20
+									flex items-center justify-center
+								"
+							>
+								<ShoppingBag className="w-5 h-5 text-orange-400" />
+							</div>
+						</div>
+
+						<div className="h-[320px]">
+							<ResponsiveContainer width="100%" height="100%">
+								<LineChart data={data.ordersAnalytics}>
+									<CartesianGrid
+										strokeDasharray="3 3"
+										stroke="rgba(255,255,255,0.05)"
+									/>
+
+									<XAxis dataKey="name" stroke="#6b7280" />
+
+									<YAxis stroke="#6b7280" />
+
+									<Tooltip
+										contentStyle={{
+											background: "#0f172a",
+											border: "1px solid rgba(255,255,255,0.1)",
+											borderRadius: "16px",
+										}}
+									/>
+
+									<Line
+										type="monotone"
+										dataKey="orders"
+										stroke="#f97316"
+										strokeWidth={4}
+										dot={{
+											r: 5,
+											fill: "#f97316",
+										}}
+										activeDot={{
+											r: 8,
+										}}
+									/>
+								</LineChart>
+							</ResponsiveContainer>
+						</div>
+					</div>
+				</div>
+
 				{/* LOWER SECTION */}
 
 				<div className="grid xl:grid-cols-2 gap-6 mt-10">
@@ -291,22 +494,17 @@ export default function AdminDashboardPage() {
 						<h2 className="text-2xl font-bold mb-6">Top Selling Items</h2>
 
 						<div className="space-y-4">
-							{data.topSellingItems.length === 0 ? (
-								<div className="text-gray-400 text-sm">
-									No top selling items yet
-								</div>
-							) : (
-								data.topSellingItems.map((item, index) => (
-									<div
-										key={index}
-										className="
-											flex items-center justify-between
-											bg-white/[0.03]
-											border border-white/5
-											rounded-2xl
-											p-4
-										"
-									>
+							{data.topSellingItems.map((item, index) => (
+								<div
+									key={index}
+									className="
+										bg-white/[0.03]
+										border border-white/5
+										rounded-2xl
+										p-4
+									"
+								>
+									<div className="flex items-center justify-between">
 										<div>
 											<h3 className="font-semibold">{item._id}</h3>
 
@@ -315,14 +513,21 @@ export default function AdminDashboardPage() {
 											</p>
 										</div>
 
-										<div className="text-right">
-											<p className="font-bold text-orange-400">
-												₹{item.totalRevenue}
-											</p>
-										</div>
+										<p className="font-bold text-orange-400">
+											₹{item.totalRevenue}
+										</p>
 									</div>
-								))
-							)}
+
+									<div className="w-full h-2 rounded-full bg-white/5 mt-4 overflow-hidden">
+										<div
+											className="h-full bg-orange-500 rounded-full"
+											style={{
+												width: `${Math.min(item.totalSold * 10, 100)}%`,
+											}}
+										/>
+									</div>
+								</div>
+							))}
 						</div>
 					</div>
 
@@ -340,42 +545,36 @@ export default function AdminDashboardPage() {
 						<h2 className="text-2xl font-bold mb-6">Recent Orders</h2>
 
 						<div className="space-y-4">
-							{data.recentOrders.length === 0 ? (
-								<div className="text-gray-400 text-sm">
-									No recent orders yet
-								</div>
-							) : (
-								data.recentOrders.map((order) => (
-									<div
-										key={order._id}
-										className="
-											flex items-center justify-between
-											bg-white/[0.03]
-											border border-white/5
-											rounded-2xl
-											p-4
-										"
-									>
-										<div>
-											<h3 className="font-semibold">
-												{order.user?.name || "User"}
-											</h3>
+							{data.recentOrders.map((order) => (
+								<div
+									key={order._id}
+									className="
+										flex items-center justify-between
+										bg-white/[0.03]
+										border border-white/5
+										rounded-2xl
+										p-4
+									"
+								>
+									<div>
+										<h3 className="font-semibold">
+											{order.user?.name || "User"}
+										</h3>
 
-											<p className="text-sm text-gray-400 mt-1">
-												Order #{order._id.slice(-6)}
-											</p>
-										</div>
-
-										<div className="text-right">
-											<p className="font-bold">₹{order.totalAmount}</p>
-
-											<p className="text-xs text-gray-500 mt-1 capitalize">
-												{order.status.replaceAll("_", " ")}
-											</p>
-										</div>
+										<p className="text-sm text-gray-400 mt-1">
+											Order #{order._id.slice(-6)}
+										</p>
 									</div>
-								))
-							)}
+
+									<div className="text-right">
+										<p className="font-bold">₹{order.totalAmount}</p>
+
+										<p className="text-xs text-gray-500 mt-1 capitalize">
+											{order.status.replaceAll("_", " ")}
+										</p>
+									</div>
+								</div>
+							))}
 						</div>
 					</div>
 				</div>

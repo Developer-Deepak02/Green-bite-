@@ -3,6 +3,7 @@ const User = require("../models/User");
 const MenuItem = require("../models/MenuItem");
 
 // ================= DASHBOARD STATS =================
+// ================= DASHBOARD STATS =================
 exports.getDashboardStats = async (req, res) => {
 	try {
 		// ================= BASIC COUNTS =================
@@ -63,6 +64,116 @@ exports.getDashboardStats = async (req, res) => {
 
 		const totalRevenue =
 			revenueResult.length > 0 ? revenueResult[0].totalRevenue : 0;
+
+		// ================= DATE HELPERS =================
+
+		const today = new Date();
+
+		const currentWeekStart = new Date();
+		currentWeekStart.setDate(today.getDate() - 6);
+		currentWeekStart.setHours(0, 0, 0, 0);
+
+		const previousWeekStart = new Date();
+		previousWeekStart.setDate(currentWeekStart.getDate() - 7);
+
+		const previousWeekEnd = new Date();
+		previousWeekEnd.setDate(currentWeekStart.getDate() - 1);
+		previousWeekEnd.setHours(23, 59, 59, 999);
+
+		// ================= CURRENT WEEK =================
+
+		const currentWeekOrders = await Order.find({
+			createdAt: {
+				$gte: currentWeekStart,
+			},
+			status: {
+				$ne: "cancelled",
+			},
+		});
+
+		// ================= PREVIOUS WEEK =================
+
+		const previousWeekOrders = await Order.find({
+			createdAt: {
+				$gte: previousWeekStart,
+				$lte: previousWeekEnd,
+			},
+			status: {
+				$ne: "cancelled",
+			},
+		});
+
+		// ================= WEEK REVENUE =================
+
+		const currentWeekRevenue = currentWeekOrders.reduce(
+			(sum, order) => sum + order.totalAmount,
+			0,
+		);
+
+		const previousWeekRevenue = previousWeekOrders.reduce(
+			(sum, order) => sum + order.totalAmount,
+			0,
+		);
+
+		// ================= GROWTH CALCULATIONS =================
+
+		const revenueGrowth =
+			previousWeekRevenue === 0
+				? 100
+				: (
+						((currentWeekRevenue - previousWeekRevenue) /
+							previousWeekRevenue) *
+						100
+					).toFixed(1);
+
+		const orderGrowth =
+			previousWeekOrders.length === 0
+				? 100
+				: (
+						((currentWeekOrders.length - previousWeekOrders.length) /
+							previousWeekOrders.length) *
+						100
+					).toFixed(1);
+
+		// ================= WEEKLY ANALYTICS =================
+
+		const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+		const revenueAnalytics = [];
+		const ordersAnalytics = [];
+
+		for (let i = 0; i < 7; i++) {
+			const dayStart = new Date(currentWeekStart);
+
+			dayStart.setDate(currentWeekStart.getDate() + i);
+
+			dayStart.setHours(0, 0, 0, 0);
+
+			const dayEnd = new Date(dayStart);
+
+			dayEnd.setHours(23, 59, 59, 999);
+
+			const dayOrders = currentWeekOrders.filter((order) => {
+				const orderDate = new Date(order.createdAt);
+
+				return orderDate >= dayStart && orderDate <= dayEnd;
+			});
+
+			const revenue = dayOrders.reduce(
+				(sum, order) => sum + order.totalAmount,
+				0,
+			);
+
+			revenueAnalytics.push({
+				name: weekDays[i],
+				revenue,
+			});
+
+			ordersAnalytics.push({
+				name: weekDays[i],
+				orders: dayOrders.length,
+			});
+		}
 
 		// ================= PAYMENT ANALYTICS =================
 
@@ -137,45 +248,6 @@ exports.getDashboardStats = async (req, res) => {
 			},
 		]);
 
-		// ================= MONTHLY REVENUE =================
-
-		const monthlyRevenue = await Order.aggregate([
-			{
-				$match: {
-					status: {
-						$ne: "cancelled",
-					},
-				},
-			},
-			{
-				$group: {
-					_id: {
-						year: {
-							$year: "$createdAt",
-						},
-
-						month: {
-							$month: "$createdAt",
-						},
-					},
-
-					totalRevenue: {
-						$sum: "$totalAmount",
-					},
-
-					totalOrders: {
-						$sum: 1,
-					},
-				},
-			},
-			{
-				$sort: {
-					"_id.year": 1,
-					"_id.month": 1,
-				},
-			},
-		]);
-
 		// ================= RECENT ORDERS =================
 
 		const recentOrders = await Order.find()
@@ -202,14 +274,21 @@ exports.getDashboardStats = async (req, res) => {
 				cancelledOrders,
 			},
 
+			growthStats: {
+				revenueGrowth,
+				orderGrowth,
+			},
+
+			revenueAnalytics,
+
+			ordersAnalytics,
+
 			paymentAnalytics: {
 				codRevenue,
 				razorpayRevenue,
 			},
 
 			topSellingItems,
-
-			monthlyRevenue,
 
 			recentOrders,
 		});
