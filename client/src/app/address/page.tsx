@@ -12,6 +12,7 @@ import {
 	MapPinned,
 } from "lucide-react";
 import { toast } from "sonner";
+import Navbar from "@/components/shared/Navbar";
 
 interface Address {
 	_id: string;
@@ -164,6 +165,7 @@ const handleDelete = async (id: string) => {
 	return (
 		<ProtectedRoute>
 			<section className="relative min-h-screen bg-[#020817] overflow-hidden">
+				<Navbar />
 				{/* BG GLOW */}
 
 				<div

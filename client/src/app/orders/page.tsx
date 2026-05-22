@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
+import Link from "next/link";
 
 import {
 	MapPin,
@@ -14,16 +15,23 @@ import {
 	Clock3,
 	CreditCard,
 	Wallet,
+	ArrowRight,
+	RotateCcw,
 } from "lucide-react";
+
 import { toast } from "sonner";
+
+import { useCartStore } from "@/store/useCartStore";
 
 interface Order {
 	_id: string;
 
 	items: {
+		_id?: string;
 		name: string;
 		price: number;
 		quantity: number;
+		image?: string;
 	}[];
 
 	totalAmount: number;
@@ -50,6 +58,8 @@ export default function OrdersPage() {
 	const [orders, setOrders] = useState<Order[]>([]);
 
 	const [loading, setLoading] = useState(true);
+
+	const { addToCart } = useCartStore();
 
 	useEffect(() => {
 		const fetchOrders = async () => {
@@ -88,6 +98,28 @@ export default function OrdersPage() {
 
 		return () => clearInterval(interval);
 	}, []);
+
+	const handleReorder = (order: Order) => {
+		order.items.forEach((item, index) => {
+			addToCart({
+				_id: item._id || `${order._id}-${index}`,
+
+				name: item.name,
+
+				price: item.price,
+
+				quantity: item.quantity,
+
+				image: item.image || "/placeholder-food.jpg",
+			});
+		});
+
+		toast.success("Items added to cart");
+
+		setTimeout(() => {
+			window.location.href = "/cart";
+		}, 700);
+	};
 
 	const getCurrentStep = (status: string) => {
 		return steps.findIndex((step) => status.toLowerCase().includes(step));
@@ -139,58 +171,22 @@ export default function OrdersPage() {
 	return (
 		<ProtectedRoute>
 			<Navbar />
+
 			<section className="min-h-screen px-4 md:px-6 py-8">
 				<div className="max-w-5xl mx-auto">
-					{/* HEADER */}
-
 					<div className="mb-10">
-						<p
-							className="
-								text-orange-400
-								text-sm
-								font-medium
-								mb-3
-							"
-						>
+						<p className="text-orange-400 text-sm font-medium mb-3">
 							Track & manage your orders
 						</p>
 
-						<h1
-							className="
-								text-3xl
-								md:text-4xl
-								font-bold
-								text-white
-								tracking-tight
-							"
-						>
+						<h1 className="text-3xl md:text-4xl font-bold text-white tracking-tight">
 							Your Orders
 						</h1>
 					</div>
 
-					{/* EMPTY */}
-
 					{orders.length === 0 ? (
-						<div
-							className="
-								border border-white/10
-								bg-white/[0.03]
-								backdrop-blur-xl
-								rounded-3xl
-								p-10
-								text-center
-							"
-						>
-							<div
-								className="
-									w-14 h-14
-									rounded-2xl
-									bg-orange-500/10
-									border border-orange-500/20
-									flex items-center justify-center
-									mx-auto mb-5
-								"
-							>
+						<div className="border border-white/10 bg-white/[0.03] backdrop-blur-xl rounded-3xl p-10 text-center">
+							<div className="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mx-auto mb-5">
 								<PackageCheck className="w-7 h-7 text-orange-400" />
 							</div>
 
@@ -203,7 +199,7 @@ export default function OrdersPage() {
 							</p>
 						</div>
 					) : (
-						<div className="space-y-5">
+						<div className="space-y-6">
 							{orders.map((order) => {
 								const currentStep = getCurrentStep(order.status);
 
@@ -211,34 +207,19 @@ export default function OrdersPage() {
 									<div
 										key={order._id}
 										className="
-											rounded-3xl
+											rounded-[32px]
 											border border-white/10
 											bg-white/[0.03]
 											backdrop-blur-xl
 											p-5 md:p-6
 										"
 									>
-										{/* TOP */}
+										{/* HEADER */}
 
-										<div
-											className="
-												flex
-												flex-col
-												md:flex-row
-												md:items-start
-												md:justify-between
-												gap-5
-											"
-										>
-											<div>
+										<div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+											<div className="space-y-4">
 												<div className="flex items-center gap-2 flex-wrap">
-													<h2
-														className="
-															text-lg
-															font-semibold
-															text-white
-														"
-													>
+													<h2 className="text-xl font-bold text-white">
 														Order #{order._id.slice(-6)}
 													</h2>
 
@@ -249,6 +230,7 @@ export default function OrdersPage() {
 															text-xs
 															font-medium
 															border
+															capitalize
 															${getStatusStyle(order.status)}
 														`}
 													>
@@ -286,33 +268,62 @@ export default function OrdersPage() {
 													</div>
 												</div>
 
-												<div
-													className="
-														flex items-center gap-2
-														text-gray-500
-														text-xs
-														mt-3
-													"
-												>
+												<div className="flex items-center gap-2 text-gray-500 text-xs">
 													<Clock3 className="w-3.5 h-3.5" />
 
 													{new Date(order.createdAt).toLocaleString()}
 												</div>
 											</div>
 
-											<div className="text-left md:text-right">
+											<div className="text-left lg:text-right">
 												<p className="text-xs text-gray-500 mb-1">Total</p>
 
-												<h3
-													className="
-														text-2xl
-														font-bold
-														text-white
-													"
-												>
+												<h3 className="text-3xl font-black text-white">
 													₹{order.totalAmount}
 												</h3>
 											</div>
+										</div>
+
+										{/* BUTTONS */}
+
+										<div className="flex flex-wrap items-center gap-3 mt-6">
+											<button
+												onClick={() => handleReorder(order)}
+												className="
+													h-11
+													px-5
+													rounded-2xl
+													bg-white/[0.03]
+													border border-white/10
+													text-white
+													font-medium
+													inline-flex items-center gap-2
+													hover:bg-white/[0.05]
+													transition-all duration-300
+												"
+											>
+												<RotateCcw className="w-4 h-4" />
+												Reorder
+											</button>
+
+											<Link
+												href={`/orders/${order._id}`}
+												className="
+													h-11
+													px-5
+													rounded-2xl
+													bg-orange-500
+													text-white
+													font-medium
+													inline-flex items-center gap-2
+													hover:bg-orange-600
+													transition-all duration-300
+													shadow-lg shadow-orange-500/20
+												"
+											>
+												View Details
+												<ArrowRight className="w-4 h-4" />
+											</Link>
 										</div>
 
 										{/* ITEMS */}
@@ -330,34 +341,16 @@ export default function OrdersPage() {
 													"
 												>
 													<div>
-														<h4
-															className="
-																text-sm
-																font-medium
-																text-white
-															"
-														>
+														<h4 className="text-sm font-medium text-white">
 															{item.name}
 														</h4>
 
-														<p
-															className="
-																text-xs
-																text-gray-500
-																mt-1
-															"
-														>
+														<p className="text-xs text-gray-500 mt-1">
 															Qty {item.quantity}
 														</p>
 													</div>
 
-													<p
-														className="
-															text-sm
-															font-semibold
-															text-white
-														"
-													>
+													<p className="text-sm font-semibold text-white">
 														₹{item.price * item.quantity}
 													</p>
 												</div>
@@ -366,120 +359,123 @@ export default function OrdersPage() {
 
 										{/* TRACKER */}
 
-										<div className="mt-7">
-											<div
-												className="
-													grid grid-cols-4
-													gap-3
-												"
-											>
-												{[
-													{
-														icon: PackageCheck,
-														label: "Confirmed",
-													},
-													{
-														icon: ChefHat,
-														label: "Preparing",
-													},
-													{
-														icon: Bike,
-														label: "Delivery",
-													},
-													{
-														icon: CheckCircle2,
-														label: "Delivered",
-													},
-												].map((step, index) => {
-													const active = index <= currentStep;
+										<div className="mt-8">
+											<div className="relative">
+												<div className="absolute top-5 left-[12%] right-[12%] h-[2px] bg-white/10 hidden md:block" />
 
-													const Icon = step.icon;
+												<div
+													className="
+														absolute
+														top-5
+														left-[12%]
+														h-[2px]
+														bg-orange-500
+														transition-all duration-500
+														hidden md:block
+													"
+													style={{
+														width:
+															currentStep <= 0
+																? "0%"
+																: currentStep === 1
+																	? "26%"
+																	: currentStep === 2
+																		? "52%"
+																		: "76%",
+													}}
+												/>
 
-													return (
-														<div
-															key={step.label}
-															className="
-																flex
-																flex-col
-																items-center
-																text-center
-															"
-														>
+												<div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative">
+													{[
+														{
+															icon: PackageCheck,
+															label: "Confirmed",
+														},
+														{
+															icon: ChefHat,
+															label: "Preparing",
+														},
+														{
+															icon: Bike,
+															label: "Delivery",
+														},
+														{
+															icon: CheckCircle2,
+															label: "Delivered",
+														},
+													].map((step, index) => {
+														const active = index <= currentStep;
+
+														const Icon = step.icon;
+
+														return (
 															<div
-																className={`
-																	w-11 h-11
-																	rounded-2xl
-																	border
-																	flex items-center justify-center
-																	transition-all
-																	${
-																		active
-																			? "bg-orange-500 border-orange-500 text-white"
-																			: "bg-white/[0.03] border-white/10 text-gray-500"
-																	}
-																`}
+																key={step.label}
+																className="flex flex-col items-center text-center"
 															>
-																<Icon className="w-5 h-5" />
-															</div>
+																<div className="relative">
+																	<div
+																		className={`
+																			w-11 h-11
+																			rounded-2xl
+																			border
+																			flex items-center justify-center
+																			transition-all duration-300
+																			relative z-10
+																			${
+																				active
+																					? `
+																						bg-orange-500
+																						border-orange-500
+																						text-white
+																						shadow-lg shadow-orange-500/30
+																					`
+																					: `
+																						bg-[#0b1220]
+																						border-white/10
+																						text-gray-500
+																					`
+																			}
+																		`}
+																	>
+																		<Icon className="w-5 h-5" />
+																	</div>
 
-															<p
-																className={`
-																	mt-2
-																	text-[11px]
-																	font-medium
-																	${active ? "text-white" : "text-gray-500"}
-																`}
-															>
-																{step.label}
-															</p>
-														</div>
-													);
-												})}
+																	{index === currentStep && (
+																		<div className="absolute inset-0 rounded-2xl bg-orange-500/30 animate-ping" />
+																	)}
+																</div>
+
+																<p
+																	className={`
+																		mt-3
+																		text-[11px]
+																		font-medium
+																		${active ? "text-white" : "text-gray-500"}
+																	`}
+																>
+																	{step.label}
+																</p>
+															</div>
+														);
+													})}
+												</div>
 											</div>
 										</div>
 
 										{/* ADDRESS */}
 
-										<div
-											className="
-												mt-7
-												pt-5
-												border-t border-white/10
-												flex items-start gap-3
-											"
-										>
-											<div
-												className="
-													w-10 h-10
-													rounded-xl
-													bg-orange-500/10
-													border border-orange-500/20
-													flex items-center justify-center
-													shrink-0
-												"
-											>
+										<div className="mt-8 pt-5 border-t border-white/10 flex items-start gap-3">
+											<div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
 												<MapPin className="w-4 h-4 text-orange-400" />
 											</div>
 
 											<div>
-												<p
-													className="
-														text-sm
-														font-medium
-														text-white
-														mb-1
-													"
-												>
+												<p className="text-sm font-medium text-white mb-1">
 													Delivery Address
 												</p>
 
-												<p
-													className="
-														text-sm
-														text-gray-400
-														leading-relaxed
-													"
-												>
+												<p className="text-sm text-gray-400 leading-relaxed">
 													{order.address?.street}, {order.address?.city},{" "}
 													{order.address?.state} - {order.address?.pincode}
 												</p>
@@ -492,7 +488,8 @@ export default function OrdersPage() {
 					)}
 				</div>
 			</section>
-				<Footer />
+
+			<Footer />
 		</ProtectedRoute>
 	);
 }

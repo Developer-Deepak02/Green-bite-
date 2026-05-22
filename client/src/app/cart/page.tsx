@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import {
@@ -216,7 +217,7 @@ export default function CartPage() {
 				clearCart();
 
 				setTimeout(() => {
-					window.location.href = "/orders";
+					window.location.href = `/order-success?orderId=${orderData._id}`;
 				}, 1200);
 
 				return;
@@ -331,7 +332,7 @@ export default function CartPage() {
 							}),
 						});
 
-						toast.error("Payment cancelled");
+						window.location.href = "/order-failed";
 					},
 				},
 			};
@@ -366,10 +367,26 @@ export default function CartPage() {
 						Add some delicious meals to your cart.
 					</p>
 
-					<button className="mt-6 inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 h-12 rounded-2xl transition-all">
+					<Link
+						href="/menu"
+						className="
+		mt-6
+		inline-flex
+		items-center
+		gap-2
+		bg-orange-500
+		hover:bg-orange-600
+		text-white
+		font-semibold
+		px-6
+		h-12
+		rounded-2xl
+		transition-all
+	"
+					>
 						Explore Menu
 						<ArrowRight className="w-4 h-4" />
-					</button>
+					</Link>
 				</div>
 			</section>
 		);

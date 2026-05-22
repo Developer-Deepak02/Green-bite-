@@ -1,7 +1,9 @@
 "use client";
+
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
 import {
 	ShoppingCart,
 	User,
@@ -12,33 +14,58 @@ import {
 	Home,
 	UtensilsCrossed,
 	LogOut,
-	Ticket,
 	Heart,
+	LayoutDashboard,
+	Package,
+	MapPin,
+	ChevronDown,
 } from "lucide-react";
+
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+
 import SearchModal from "@/components/search/SearchModal";
+
 export default function Navbar() {
 	const pathname = usePathname();
+
+	const router = useRouter();
+
 	const [mobileOpen, setMobileOpen] = useState(false);
+
 	const [scrolled, setScrolled] = useState(false);
+
 	const [searchOpen, setSearchOpen] = useState(false);
+
+	const [profileOpen, setProfileOpen] = useState(false);
+
 	const items = useCartStore((state) => state.items);
+
 	const wishlistItems = useWishlistStore((state) => state.items);
+
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+
 	const { user, logout } = useAuthStore();
+
 	const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
+
 	const handleLogout = () => {
-	logout();
-	setMobileOpen(false);
-	toast.success("Logged out successfully");
-	setTimeout(() => {
-		window.location.href = "/";
-	}, 1000);
-};
+		logout();
+
+		setMobileOpen(false);
+
+		setProfileOpen(false);
+
+		toast.success("Logged out successfully");
+
+		router.push("/");
+	};
+
 	const navLinks = [
 		{
 			name: "Home",
@@ -56,30 +83,38 @@ export default function Navbar() {
 			name: "Orders",
 			href: "/orders",
 		},
+
 		...(user?.role === "admin"
 			? [
 					{
 						name: "Dashboard",
-						href: "/admin/",
+						href: "/admin",
 					},
 				]
 			: []),
+
 		{
 			name: "About",
 			href: "/about",
 		},
 	];
+
 	useEffect(() => {
 		const handleScroll = () => {
 			setScrolled(window.scrollY > 10);
 		};
+
 		window.addEventListener("scroll", handleScroll);
+
 		const fetchWishlist = useWishlistStore.getState().fetchWishlist;
+
 		fetchWishlist();
+
 		return () => {
 			window.removeEventListener("scroll", handleScroll);
 		};
 	}, []);
+
 	return (
 		<header
 			className={`
@@ -105,6 +140,7 @@ export default function Navbar() {
 				"
 			>
 				{/* LEFT */}
+
 				<Link
 					href="/"
 					className="
@@ -114,6 +150,7 @@ export default function Navbar() {
 					"
 				>
 					{/* LOGO */}
+
 					<div
 						className="
 							relative
@@ -138,9 +175,12 @@ export default function Navbar() {
 								transition-opacity duration-300
 							"
 						/>
-				<HandPlatter className="w-5 h-5 text-white relative z-10" />
+
+						<HandPlatter className="w-5 h-5 text-white relative z-10" />
 					</div>
+
 					{/* BRAND */}
+
 					<div className="leading-tight">
 						<h1
 							className="
@@ -160,6 +200,7 @@ export default function Navbar() {
 								Rush
 							</span>
 						</h1>
+
 						<p
 							className="
 								text-[11px]
@@ -173,7 +214,9 @@ export default function Navbar() {
 						</p>
 					</div>
 				</Link>
+
 				{/* DESKTOP NAV */}
+
 				<nav
 					className="
 						hidden lg:flex
@@ -183,6 +226,7 @@ export default function Navbar() {
 				>
 					{navLinks.map((link) => {
 						const active = pathname === link.href;
+
 						return (
 							<Link
 								key={link.name}
@@ -197,6 +241,7 @@ export default function Navbar() {
 								`}
 							>
 								{link.name}
+
 								{active && (
 									<div
 										className="
@@ -214,9 +259,12 @@ export default function Navbar() {
 						);
 					})}
 				</nav>
+
 				{/* RIGHT */}
+
 				<div className="flex items-center gap-3">
 					{/* SEARCH */}
+
 					<Button
 						size="icon"
 						variant="outline"
@@ -236,7 +284,9 @@ export default function Navbar() {
 					>
 						<Search className="w-5 h-5" />
 					</Button>
+
 					{/* WISHLIST */}
+
 					<Link href="/wishlist">
 						<Button
 							size="icon"
@@ -256,6 +306,7 @@ export default function Navbar() {
 							"
 						>
 							<Heart className="w-5 h-5" />
+
 							{wishlistItems.length > 0 && (
 								<div
 									className="
@@ -278,7 +329,9 @@ export default function Navbar() {
 							)}
 						</Button>
 					</Link>
+
 					{/* CART */}
+
 					<Link href="/cart">
 						<Button
 							size="icon"
@@ -298,6 +351,7 @@ export default function Navbar() {
 							"
 						>
 							<ShoppingCart className="w-5 h-5" />
+
 							{totalItems > 0 && (
 								<div
 									className="
@@ -321,28 +375,216 @@ export default function Navbar() {
 							)}
 						</Button>
 					</Link>
-					{/* DESKTOP PROFILE */}
+
+					{/* PROFILE */}
+
 					{user ? (
-						<Link href="/profile" className="hidden sm:block">
+						<div className="relative hidden sm:block">
 							<button
+								onClick={() => setProfileOpen((prev) => !prev)}
 								className="
-									w-11 h-11
+									h-11
+									pl-3
+									pr-2
 									rounded-2xl
-									bg-orange-500
-									text-white
-									font-bold
-									text-sm
-									shadow-lg shadow-orange-500/20
-									hover:scale-105
+									bg-white/[0.03]
+									border border-white/10
+									hover:bg-white/[0.06]
 									transition-all duration-300
-									flex items-center justify-center
+									flex items-center gap-3
 								"
 							>
-								{userInitial}
+								<div
+									className="
+										w-8 h-8
+										rounded-xl
+										bg-orange-500
+										text-white
+										font-bold
+										text-sm
+										flex items-center justify-center
+									"
+								>
+									{userInitial}
+								</div>
+
+								<ChevronDown
+									className={`
+										w-4 h-4 text-gray-400
+										transition-transform duration-300
+										${profileOpen ? "rotate-180" : ""}
+									`}
+								/>
 							</button>
-						</Link>
+
+							{/* DROPDOWN */}
+
+							{profileOpen && (
+								<div
+									className="
+										absolute
+										right-0
+										top-14
+										w-72
+										rounded-[28px]
+										border border-white/10
+										bg-[#0B1220]/95
+										backdrop-blur-2xl
+										shadow-2xl shadow-black/40
+										overflow-hidden
+										z-50
+									"
+								>
+									{/* USER INFO */}
+
+									<div className="p-5 border-b border-white/10">
+										<p className="text-white font-semibold">{user.name}</p>
+
+										<p className="text-sm text-gray-400 mt-1">{user.email}</p>
+									</div>
+
+									{/* LINKS */}
+
+									<div className="p-2 space-y-1">
+										<Link
+											href="/profile"
+											onClick={() => setProfileOpen(false)}
+											className="
+												flex
+												items-center
+												gap-3
+												w-full
+												h-12
+												px-4
+												rounded-2xl
+												text-gray-300
+												hover:bg-white/[0.05]
+												hover:text-white
+												transition-all duration-300
+											"
+										>
+											<User className="w-4 h-4" />
+											My Profile
+										</Link>
+
+										<Link
+											href="/orders"
+											onClick={() => setProfileOpen(false)}
+											className="
+												flex
+												items-center
+												gap-3
+												w-full
+												h-12
+												px-4
+												rounded-2xl
+												text-gray-300
+												hover:bg-white/[0.05]
+												hover:text-white
+												transition-all duration-300
+											"
+										>
+											<Package className="w-4 h-4" />
+											My Orders
+										</Link>
+
+										<Link
+											href="/wishlist"
+											onClick={() => setProfileOpen(false)}
+											className="
+												flex
+												items-center
+												gap-3
+												w-full
+												h-12
+												px-4
+												rounded-2xl
+												text-gray-300
+												hover:bg-white/[0.05]
+												hover:text-white
+												transition-all duration-300
+											"
+										>
+											<Heart className="w-4 h-4" />
+											Wishlist
+										</Link>
+
+										<Link
+											href="/address"
+											onClick={() => setProfileOpen(false)}
+											className="
+												flex
+												items-center
+												gap-3
+												w-full
+												h-12
+												px-4
+												rounded-2xl
+												text-gray-300
+												hover:bg-white/[0.05]
+												hover:text-white
+												transition-all duration-300
+											"
+										>
+											<MapPin className="w-4 h-4" />
+											Addresses
+										</Link>
+
+										{/* ADMIN */}
+
+										{user.role === "admin" && (
+											<Link
+												href="/admin"
+												onClick={() => setProfileOpen(false)}
+												className="
+													flex
+													items-center
+													gap-3
+													w-full
+													h-12
+													px-4
+													rounded-2xl
+													text-orange-400
+													bg-orange-500/10
+													border border-orange-500/10
+													hover:bg-orange-500/20
+													transition-all duration-300
+													mt-2
+												"
+											>
+												<LayoutDashboard className="w-4 h-4" />
+												Admin Dashboard
+											</Link>
+										)}
+									</div>
+
+									{/* LOGOUT */}
+
+									<div className="p-3 border-t border-white/10">
+										<button
+											onClick={handleLogout}
+											className="
+												w-full
+												h-12
+												rounded-2xl
+												bg-red-500/10
+												border border-red-500/20
+												text-red-400
+												font-semibold
+												hover:bg-red-500/20
+												transition-all duration-300
+												flex items-center justify-center gap-2
+											"
+										>
+											<LogOut className="w-4 h-4" />
+											Logout
+										</button>
+									</div>
+								</div>
+							)}
+						</div>
 					) : (
-						<Link href="/login" className="hidden sm:block">
+						<Link href="/auth/login" className="hidden sm:block">
 							<Button
 								className="
 									h-11
@@ -356,42 +598,6 @@ export default function Navbar() {
 								"
 							>
 								<User className="w-4 h-4 mr-2" />
-								Sign In
-							</Button>
-						</Link>
-					)}
-					{/* MOBILE PROFILE */}
-					{user ? (
-						<Link href="/profile" className="sm:hidden">
-							<button
-								className="
-									w-10 h-10
-									rounded-2xl
-									bg-orange-500
-									text-white
-									font-bold
-									text-sm
-									flex items-center justify-center
-									shadow-lg shadow-orange-500/20
-								"
-							>
-								{userInitial}
-							</button>
-						</Link>
-					) : (
-						<Link href="/login" className="sm:hidden">
-							<Button
-								className="
-									h-10
-									px-4
-									rounded-2xl
-									bg-orange-500
-									hover:bg-orange-600
-									text-white
-									font-semibold
-									text-sm
-								"
-							>
 								Sign In
 							</Button>
 						</Link>
@@ -454,10 +660,6 @@ export default function Navbar() {
 
 								case "Menu":
 									Icon = UtensilsCrossed;
-									break;
-
-								case "Offers":
-									Icon = Ticket;
 									break;
 
 								case "Orders":
@@ -560,6 +762,7 @@ export default function Navbar() {
 					)}
 				</div>
 			)}
+
 			<SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 		</header>
 	);
