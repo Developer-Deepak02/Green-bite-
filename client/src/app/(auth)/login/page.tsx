@@ -46,7 +46,6 @@ const handleLogin = async (e: React.FormEvent) => {
 
 		if (!res.ok) {
 			toast.error(data.message || "Login failed");
-
 			return;
 		}
 

@@ -1,9 +1,7 @@
 "use client";
-
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
-
 import {
 	ShoppingCart,
 	User,
@@ -20,32 +18,22 @@ import {
 	MapPin,
 	ChevronDown,
 } from "lucide-react";
-
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
-
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
-
 import SearchModal from "@/components/search/SearchModal";
 
 export default function Navbar() {
 	const pathname = usePathname();
-
 	const router = useRouter();
-
 	const [mobileOpen, setMobileOpen] = useState(false);
-
 	const [scrolled, setScrolled] = useState(false);
-
 	const [searchOpen, setSearchOpen] = useState(false);
-
 	const [profileOpen, setProfileOpen] = useState(false);
-
+	const profileRef = useRef<HTMLDivElement | null>(null);
 	const items = useCartStore((state) => state.items);
-
 	const wishlistItems = useWishlistStore((state) => state.items);
 
 	const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -53,7 +41,26 @@ export default function Navbar() {
 	const { user, logout } = useAuthStore();
 
 	const userInitial = user?.name?.charAt(0).toUpperCase() || "U";
+	useEffect(() => {
+		setProfileOpen(false);
+	}, [pathname]);
 
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				profileRef.current &&
+				!profileRef.current.contains(event.target as Node)
+			) {
+				setProfileOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
 	const handleLogout = () => {
 		logout();
 
@@ -118,7 +125,7 @@ export default function Navbar() {
 	return (
 		<header
 			className={`
-				sticky top-0 z-50
+				sticky top-0 z-[9999]
 				w-full
 				transition-all duration-300
 				${
@@ -332,54 +339,56 @@ export default function Navbar() {
 
 					{/* CART */}
 
-					<Link href="/cart">
-						<Button
-							size="icon"
-							variant="outline"
-							className="
-								hidden sm:flex
-								relative
-								w-11 h-11
-								rounded-2xl
-								border-white/10
-								bg-white/[0.03]
-								backdrop-blur-xl
-								text-gray-300
-								hover:bg-white/10
-								hover:text-white
-								hover:border-white/20
-							"
-						>
-							<ShoppingCart className="w-5 h-5" />
+					{user && (
+						<Link href="/cart">
+							<Button
+								size="icon"
+								variant="outline"
+								className="
+				hidden sm:flex
+				relative
+				w-11 h-11
+				rounded-2xl
+				border-white/10
+				bg-white/[0.03]
+				backdrop-blur-xl
+				text-gray-300
+				hover:bg-white/10
+				hover:text-white
+				hover:border-white/20
+			"
+							>
+								<ShoppingCart className="w-5 h-5" />
 
-							{totalItems > 0 && (
-								<div
-									className="
-										absolute
-										-top-1
-										-right-1
-										min-w-[20px]
-										h-5
-										rounded-full
-										bg-orange-500
-										text-white
-										text-[10px]
-										font-bold
-										flex items-center justify-center
-										px-1
-										shadow-lg shadow-orange-500/30
-									"
-								>
-									{totalItems}
-								</div>
-							)}
-						</Button>
-					</Link>
+								{totalItems > 0 && (
+									<div
+										className="
+						absolute
+						-top-1
+						-right-1
+						min-w-[20px]
+						h-5
+						rounded-full
+						bg-orange-500
+						text-white
+						text-[10px]
+						font-bold
+						flex items-center justify-center
+						px-1
+						shadow-lg shadow-orange-500/30
+					"
+									>
+										{totalItems}
+									</div>
+								)}
+							</Button>
+						</Link>
+					)}
 
 					{/* PROFILE */}
 
 					{user ? (
-						<div className="relative hidden sm:block">
+						<div ref={profileRef} className="relative hidden sm:block z-[999]">
 							<button
 								onClick={() => setProfileOpen((prev) => !prev)}
 								className="
@@ -422,18 +431,18 @@ export default function Navbar() {
 							{profileOpen && (
 								<div
 									className="
-										absolute
-										right-0
-										top-14
-										w-72
-										rounded-[28px]
-										border border-white/10
-										bg-[#0B1220]/95
-										backdrop-blur-2xl
-										shadow-2xl shadow-black/40
-										overflow-hidden
-										z-50
-									"
+		absolute
+		right-0
+		top-14
+		w-72
+		rounded-[28px]
+		border border-white/10
+		bg-[#0B1220]/95
+		backdrop-blur-2xl
+		shadow-2xl shadow-black/40
+		overflow-hidden
+		z-[99999]
+	"
 								>
 									{/* USER INFO */}
 
@@ -584,7 +593,7 @@ export default function Navbar() {
 							)}
 						</div>
 					) : (
-						<Link href="/auth/login" className="hidden sm:block">
+						<Link href="/login" className="hidden sm:block">
 							<Button
 								className="
 									h-11
@@ -736,6 +745,27 @@ export default function Navbar() {
 								</div>
 							)}
 						</Link>
+						{!user && (
+							<div className="p-3 border-t border-white/10">
+								<Link href="/login" onClick={() => setMobileOpen(false)}>
+									<Button
+										className="
+					w-full
+					h-11
+					rounded-2xl
+					bg-orange-500
+					hover:bg-orange-600
+					text-white
+					font-semibold
+					shadow-lg shadow-orange-500/20
+				"
+									>
+										<User className="w-4 h-4 mr-2" />
+										Sign In
+									</Button>
+								</Link>
+							</div>
+						)}
 					</div>
 
 					{/* LOGOUT */}

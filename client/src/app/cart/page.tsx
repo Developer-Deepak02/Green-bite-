@@ -527,9 +527,9 @@ export default function CartPage() {
 											No address found. Please add one.
 										</p>
 
-										<button className="h-11 px-5 rounded-2xl border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-medium transition-all">
+										<Link className="h-11 px-5 rounded-2xl border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 font-medium transition-all" href={"/address"}>
 											+ Add New Address
-										</button>
+										</Link>
 									</div>
 								) : (
 									<div className="space-y-3">

@@ -9,6 +9,7 @@ import {
 	ShoppingCart,
 	ShoppingBag,
 	MenuSquare,
+	MessageSquare,
 	TicketPercent,
 	Users,
 	Star,
@@ -22,46 +23,51 @@ import { useState } from "react";
 import { useAuthStore } from "@/store/useAuthStore";
 
 const links = [
-	{
-		label: "Store",
-		href: "/",
-		icon: ShoppingBag,
-	},
-	{
-		label: "Dashboard",
-		href: "/admin",
-		icon: LayoutDashboard,
-	},
-	{
-		label: "Orders",
-		href: "/admin/orders",
-		icon: ShoppingCart,
-	},
-	{
-		label: "Menu",
-		href: "/admin/menu",
-		icon: MenuSquare,
-	},
-	{
-		label: "Categories",
-		href: "/admin/categories",
-		icon: LayoutGrid,
-	},
-	{
-		label: "Coupons",
-		href: "/admin/coupons",
-		icon: TicketPercent,
-	},
-	{
-		label: "Users",
-		href: "/admin/users",
-		icon: Users,
-	},
-	{
-		label: "Reviews",
-		href: "/admin/reviews",
-		icon: Star,
-	},
+  {
+    label: 'Store',
+    href: '/',
+    icon: ShoppingBag,
+  },
+  {
+    label: 'Dashboard',
+    href: '/admin',
+    icon: LayoutDashboard,
+  },
+  {
+    label: 'Orders',
+    href: '/admin/orders',
+    icon: ShoppingCart,
+  },
+  {
+    label: 'Messages',
+    href: '/admin/messages',
+    icon: MessageSquare,
+  },
+  {
+    label: 'Menu',
+    href: '/admin/menu',
+    icon: MenuSquare,
+  },
+  {
+    label: 'Categories',
+    href: '/admin/categories',
+    icon: LayoutGrid,
+  },
+  {
+    label: 'Coupons',
+    href: '/admin/coupons',
+    icon: TicketPercent,
+  },
+  {
+    label: 'Users',
+    href: '/admin/users',
+    icon: Users,
+  },
+  {
+    label: 'Reviews',
+    href: '/admin/reviews',
+    icon: Star,
+  },
 ];
 
 export default function AdminSidebar() {

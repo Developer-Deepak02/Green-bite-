@@ -1,140 +1,146 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
+const User = require('../models/User');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-const sendEmail = require("../emails/sendEmail");
+const sendEmail = require('../emails/sendEmail');
 
-const welcomeTemplate = require("../emails/templates/welcomeTemplate");
+const welcomeTemplate = require('../emails/templates/welcomeTemplate');
 
 // ================= GENERATE JWT TOKEN =================
 const generateToken = (user) => {
-	return jwt.sign(
-		{
-			id: user._id,
-			role: user.role,
-		},
-		process.env.JWT_SECRET,
-		{
-			expiresIn: "7d",
-		},
-	);
+  return jwt.sign(
+    {
+      id: user._id,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: '7d',
+    }
+  );
 };
 
 // ================= REGISTER =================
 exports.registerUser = async (req, res) => {
-	try {
-		const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-		// Validate fields
-		if (!name || !email || !password) {
-			return res.status(400).json({
-				message: "All fields are required",
-			});
-		}
+    // Validate fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        message: 'All fields are required',
+      });
+    }
 
-		// Prevent duplicate users
-		const existingUser = await User.findOne({
-			email,
-		});
+    // Prevent duplicate users
+    const existingUser = await User.findOne({
+      email,
+    });
 
-		if (existingUser) {
-			return res.status(400).json({
-				message: "User already exists",
-			});
-		}
+    if (existingUser) {
+      return res.status(400).json({
+        message: 'User already exists',
+      });
+    }
 
-		// Hash password before saving
-		const salt = await bcrypt.genSalt(10);
+    // Hash password before saving
+    const salt = await bcrypt.genSalt(10);
 
-		const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-		// Create user
-		const user = await User.create({
-			name,
-			email,
-			password: hashedPassword,
-		});
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
 
-		// ================= SEND WELCOME EMAIL =================
+    // ================= SEND WELCOME EMAIL =================
 
-		await sendEmail({
-			to: user.email,
-			subject: "Welcome to BiteRush 🍔",
-			html: welcomeTemplate({
-				name: user.name,
-			}),
-		});
+    await sendEmail({
+      to: user.email,
+      subject: 'Welcome to BiteRush 🍔',
+      html: welcomeTemplate({
+        name: user.name,
+      }),
+    });
 
-		// ================= RESPONSE =================
+    // ================= RESPONSE =================
 
-		res.status(201).json({
-			message: "User registered successfully",
+    res.status(201).json({
+      message: 'User registered successfully',
 
-			token: generateToken(user),
+      token: generateToken(user),
 
-			user: {
-				id: user._id,
-				name: user.name,
-				email: user.email,
-				role: user.role,
-			},
-		});
-	} catch (error) {
-		res.status(500).json({
-			message: error.message,
-		});
-	}
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
 
 // ================= LOGIN =================
 exports.loginUser = async (req, res) => {
-	try {
-		const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-		// Validate fields
-		if (!email || !password) {
-			return res.status(400).json({
-				message: "Email and password are required",
-			});
-		}
+    // Validate fields
+    if (!email || !password) {
+      return res.status(400).json({
+        message: 'Email and password are required',
+      });
+    }
 
-		// Find user
-		const user = await User.findOne({
-			email,
-		});
+    // Find user
+    const user = await User.findOne({
+      email,
+    });
 
-		if (!user) {
-			return res.status(400).json({
-				message: "Invalid credentials",
-			});
-		}
+    if (!user) {
+      return res.status(400).json({
+        message: 'Invalid credentials',
+      });
+    }
+    // CHECK IF USER IS BLOCKED
 
-		// Compare password
-		const isMatch = await bcrypt.compare(password, user.password);
+    if (user.isBlocked) {
+      return res.status(403).json({
+        message:
+          'Your account has been blocked by BiteRush team. Please contact support.',
+      });
+    }
 
-		if (!isMatch) {
-			return res.status(400).json({
-				message: "Invalid credentials",
-			});
-		}
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
 
-		// ================= RESPONSE =================
+    if (!isMatch) {
+      return res.status(400).json({
+        message: 'Invalid credentials',
+      });
+    }
 
-		res.status(200).json({
-			message: "Login successful",
+    // ================= RESPONSE =================
 
-			token: generateToken(user),
-
-			user: {
-				id: user._id,
-				name: user.name,
-				email: user.email,
-				role: user.role,
-			},
-		});
-	} catch (error) {
-		res.status(500).json({
-			message: error.message,
-		});
-	}
+    res.status(200).json({
+      message: 'Login successful',
+      token: generateToken(user),
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
