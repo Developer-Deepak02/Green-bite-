@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { Globe, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
+import { FaInstagram, FaFacebookF, FaDiscord } from 'react-icons/fa';
 
 const footerLinks = {
   company: [
@@ -156,26 +157,66 @@ export default function Footer() {
               {/* SOCIALS */}
 
               <div className="flex items-center gap-4">
-                {[Globe, Globe].map((Icon, index) => (
-                  <button
-                    key={index}
-                    className="
-											w-12 h-12
-											rounded-2xl
-											bg-white/[0.03]
-											border border-white/10
-											backdrop-blur-xl
-											flex items-center justify-center
-											text-gray-400
-											hover:bg-orange-500
-											hover:border-orange-500
-											hover:text-white
-											transition-all duration-300
-										"
-                  >
-                    <Icon className="w-5 h-5" />
-                  </button>
-                ))}
+                <a
+                  href="https://www.instagram.com/biterush/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+    w-12 h-12
+    rounded-2xl
+    bg-white/[0.03]
+    border border-white/10
+    backdrop-blur-xl
+    flex items-center justify-center
+    text-gray-400
+    hover:bg-orange-500
+    hover:border-orange-500
+    hover:text-white
+    transition-all duration-300
+  "
+                >
+                  <FaInstagram />
+                </a>
+                <a
+                  href="https://discord.com/invite/biterush"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+    w-12 h-12
+    rounded-2xl
+    bg-white/[0.03]
+    border border-white/10
+    backdrop-blur-xl
+    flex items-center justify-center
+    text-gray-400
+    hover:bg-orange-500
+    hover:border-orange-500
+    hover:text-white
+    transition-all duration-300
+  "
+                >
+                  <FaDiscord />
+                </a>
+                <a
+                  href="https://www.facebook.com/biterush/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="
+    w-12 h-12
+    rounded-2xl
+    bg-white/[0.03]
+    border border-white/10
+    backdrop-blur-xl
+    flex items-center justify-center
+    text-gray-400
+    hover:bg-orange-500
+    hover:border-orange-500
+    hover:text-white
+    transition-all duration-300
+  "
+                >
+                  <FaFacebookF />
+                </a>
               </div>
             </div>
           </div>

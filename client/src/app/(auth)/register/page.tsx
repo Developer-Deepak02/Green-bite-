@@ -335,7 +335,7 @@ const handleRegister = async (e: React.FormEvent) => {
 						<p className="text-gray-400 text-sm">
 							Already have an account?{" "}
 							<Link
-								href="/auth/login"
+								href="/login"
 								className="text-orange-400 hover:text-orange-300 font-medium"
 							>
 								Login

@@ -27,9 +27,9 @@ const inter = Inter({
 	variable: "--font-body",
 });
 
-export const metadata: Metadata = {
-	title: "BiteRush",
-	description: "Modern Food Delivery App",
+export const metadata = {
+  title: 'BiteRush - Fast Food Delivery',
+  description: 'Premium food ordering experience',
 };
 
 export default function RootLayout({

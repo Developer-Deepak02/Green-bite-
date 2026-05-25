@@ -1,7 +1,5 @@
 'use client';
-
 import { useState } from 'react';
-
 import {
   Mail,
   Phone,
@@ -13,14 +11,13 @@ import {
   CircleHelp,
   Loader2,
 } from 'lucide-react';
-
 import { toast } from 'sonner';
-
 import { Button } from '@/components/ui/button';
+import Navbar from '@/components/shared/Navbar';
+import Footer from '@/components/shared/Footer';
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -99,6 +96,7 @@ export default function ContactPage() {
 
       {/* HERO */}
 
+        <Navbar/>
       <section className="relative z-10 pt-28 pb-16 px-4 md:px-8 xl:px-12">
         <div className="max-w-6xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-orange-500/20 bg-orange-500/10 text-orange-400 text-sm font-medium mb-6">
@@ -442,6 +440,7 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
+        <Footer />
     </div>
   );
 }
